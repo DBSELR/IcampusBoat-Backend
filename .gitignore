@@ -1,4 +1,4 @@
-﻿################################################################################
+################################################################################
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
@@ -6,3 +6,11 @@
 /.vs/Icampus-Boat-Back/CopilotIndices/17.14.1661.41761
 /.vs/Icampus-Boat-Back/v17
 /.vs
+
+# .NET Core Build/Publish Outputs
+[Bb]in/
+[Oo]bj/
+# User-specific files
+*.user
+*.userosscache
+*.sln.docstates
