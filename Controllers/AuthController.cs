@@ -16,7 +16,6 @@ using System.Text;
 using System.Threading.Tasks;
 //harish
 //bhuu
-//vinesh
 
 namespace LMS.Controllers
 {
