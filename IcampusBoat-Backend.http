@@ -1,0 +1,6 @@
+@IcampusBoatBackend_HostAddress = http://localhost:5067
+
+GET {{IcampusBoatBackend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
