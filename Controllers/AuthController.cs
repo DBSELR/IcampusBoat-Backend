@@ -35,9 +35,10 @@ namespace IcampusBoatBackend.Controllers
             _configuration = configuration;
         }
 
-        [HttpGet]
+        [HttpPost]
         [Route("Login")]
-        public IActionResult Login(string UserId, string Password)
+        //public IActionResult Login(string UserId, string Password)
+            public IActionResult LoadAttMaxDate([FromBody] Login bol)
         {
             try
             {
@@ -49,8 +50,8 @@ namespace IcampusBoatBackend.Controllers
 
                     sqlcmd.CommandType = CommandType.StoredProcedure;
 
-                    sqlcmd.Parameters.Add("@USERID", SqlDbType.VarChar, 255).Value = UserId;
-                    sqlcmd.Parameters.Add("@PWD", SqlDbType.VarChar, 64).Value = Password;
+                    sqlcmd.Parameters.Add("@USERID", SqlDbType.VarChar, 255).Value = bol.USERID;
+                    sqlcmd.Parameters.Add("@PWD", SqlDbType.VarChar, 64).Value = bol.Password;
 
 
                     using SqlDataReader reader = sqlcmd.ExecuteReader();
@@ -72,10 +73,10 @@ namespace IcampusBoatBackend.Controllers
                     var claims = new List<Claim>
                              {
                                 //new Claim("UserID", UserId),
-                                new Claim(ClaimTypes.Name, UserId),
+                                new Claim(ClaimTypes.Name, bol.USERID),
                                 new Claim(ClaimTypes.Role, userGroup),
-                                new Claim("Regno", UserId),
-                                new Claim("SSNO",UserId),
+                                new Claim("Regno", bol.USERID),
+                                new Claim("SSNO",bol.USERID),
                                 new Claim("UserGroup", userGroup)
                              };
 
@@ -271,6 +272,12 @@ namespace IcampusBoatBackend.Controllers
         public string? USERID { get; set; }
         public string? OldPassword { get; set; }
         public string? NewPassword { get; set; }
+    }
+
+    public class Login
+    {
+        public string? USERID { get; set; }
+        public string? Password { get; set; }
     }
 
 
