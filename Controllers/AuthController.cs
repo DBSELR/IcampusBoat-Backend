@@ -64,18 +64,17 @@ namespace IcampusBoatBackend.Controllers
                     }
 
 
-                    string userId = reader["USERGROUP"].ToString();
-                    string userName = reader["USERNAME"].ToString();
-                    string userGroup = reader["SUBGROUP"].ToString();
+                    string userId = string.IsNullOrEmpty(UserId) ? reader["USERGROUP"].ToString() : UserId;
+                    string userName = reader["USERNAME"]?.ToString() ?? "";
+                    string userGroup = reader["SUBGROUP"]?.ToString() ?? "";
 
 
                     var claims = new List<Claim>
                              {
-                                //new Claim("UserID", UserId),
-                                new Claim(ClaimTypes.Name, UserId),
+                                new Claim(ClaimTypes.Name, userId),
                                 new Claim(ClaimTypes.Role, userGroup),
-                                new Claim("Regno", UserId),
-                                new Claim("SSNO",UserId),
+                                new Claim("Regno", userId),
+                                new Claim("SSNO", userId),
                                 new Claim("UserGroup", userGroup)
                              };
 
@@ -87,18 +86,15 @@ namespace IcampusBoatBackend.Controllers
                         issuer: _configuration["Jwt:Issuer"],
                         audience: _configuration["Jwt:Audience"],
                         claims: claims,
-                        expires: DateTime.UtcNow.AddMinutes(30),
+                        expires: DateTime.UtcNow.AddMinutes(480),
                         signingCredentials: signIn);
 
 
 
                     string tokenValue = new JwtSecurityTokenHandler().WriteToken(token);
 
-                    //var token = await _authService.GenerateJwtTokenAsync(userId, userGroup, 14400);
-
                     return Ok(new
                     {
-
                         token = tokenValue,
                         user = new
                         {
@@ -107,7 +103,6 @@ namespace IcampusBoatBackend.Controllers
                             userGroup,
                             message = "Login Successful"
                         }
-
                     });
                 }
 
@@ -118,88 +113,6 @@ namespace IcampusBoatBackend.Controllers
             }
         }
 
-        //[HttpGet]
-        //[Route("Load_Menu")]
-        //public IActionResult Load_Menu(string UserId, string Password)
-        //{
-        //    using (SqlConnection con = new SqlConnection(DAL.SQLConnString))
-        //    {
-        //        using (SqlCommand sqlcmd = new SqlCommand("SP_LOGIN_CHECK", con))
-        //        {
-        //            sqlcmd.CommandType = CommandType.StoredProcedure;
-        //            sqlcmd.Parameters.Add("@USERID", SqlDbType.VarChar, 255).Value = UserId;
-        //            sqlcmd.Parameters.Add("@PWD", SqlDbType.VarChar, 64).Value = Password;
-
-        //            //DataTable dt = DAL.GetData_FrmSP(sqlcmd, DAL.QueryType.SP);
-        //            con.Open();
-
-        //            using SqlDataReader reader = sqlcmd.ExecuteReader();
-
-        //            List<object> menus = new List<object>();
-
-        //            while (reader.Read())
-        //            {
-        //                menus.Add(new
-        //                {
-        //                    MenuId = reader["MENUID"].ToString(),
-        //                    MenuName = reader["MENUNAME"].ToString(),
-        //                    SubGroup = reader["SUBGROUP"].ToString()
-        //                });
-        //            }
-
-        //            if (menus.Count == 0)
-        //            {
-        //                return NotFound("No menu found.");
-        //            }
-
-        //            return Ok(menus);
-
-        //        }
-        //    }
-        //}
-
-
-        //[HttpGet]
-        //[Route("Load_Sub_Menu")]
-        //public IActionResult Load_Sub_Menu(string UserId)
-        //{
-        //    using (SqlConnection con = new SqlConnection(DAL.SQLConnString))
-        //    {
-        //        using (SqlCommand sqlcmd = new SqlCommand("[SP_LOAD_USER_SUBMENUS]", con))
-        //        {
-        //            sqlcmd.CommandType = CommandType.StoredProcedure;
-        //            sqlcmd.Parameters.Add("@USERID", SqlDbType.VarChar, 255).Value = UserId;
-
-        //            con.Open();
-
-        //            using SqlDataReader reader = sqlcmd.ExecuteReader();
-
-        //            List<object> submenus = new List<object>();
-
-        //            while (reader.Read())
-        //            {
-        //                submenus.Add(new
-        //                {
-        //                    MenuId = reader["MENUID"].ToString(),
-        //                    SMenuId = reader["SMENUID"].ToString(),
-        //                    SMenuName = reader["SubMenuNam"].ToString(),
-        //                    MenuName = reader["MENUNAME"].ToString(),
-        //                    SubGroup = reader["SUBGROUP"].ToString(),
-        //                    formtye= reader["formtype"].ToString(),
-        //                    Route = reader["FORM"].ToString(),
-        //                });
-        //            }
-
-        //            if (submenus.Count == 0)
-        //            {
-        //                return NotFound("No menu found.");
-        //            }
-
-        //            return Ok(submenus);
-
-        //        }
-        //    }
-        //    }
         [Authorize]
         [HttpGet]
         [Route("Load_Sub_Menu")]
@@ -246,13 +159,13 @@ namespace IcampusBoatBackend.Controllers
             {
                 submenus.Add(new
                 {
-                    MenuId = reader["MENUID"].ToString(),
-                    SMenuId = reader["SMENUID"].ToString(),
-                    SMenuName = reader["SubMenuNam"].ToString(),
-                    MenuName = reader["MENUNAME"].ToString(),
-                    SubGroup = reader["SUBGROUP"].ToString(),
-                    FormType = reader["FORMTYPE"].ToString(),
-                    Route = reader["FORM"].ToString(),
+                    menuId = reader["MENUID"].ToString(),
+                    sMenuId = reader["SMENUID"].ToString(),
+                    sMenuName = reader["SubMenuNam"].ToString(),
+                    menuName = reader["MENUNAME"].ToString(),
+                    subGroup = reader["SUBGROUP"].ToString(),
+                    formType = reader["FORMTYPE"].ToString(),
+                    route = reader["FORM"].ToString(),
                 });
             }
 
