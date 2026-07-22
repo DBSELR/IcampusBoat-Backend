@@ -11,6 +11,7 @@ namespace IcampusBoatBackend.Controllers
     [ApiController]
     [Route("api/[controller]")]
     public class BonafideController : ControllerBase
+        //hhh
     {
         [HttpGet]
         [Route("load")]
