@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LMS.Models
 {
@@ -22,8 +23,6 @@ namespace LMS.Models
         public string Batch { get; set; }
         public int programmeId { get; set; }
         public int groupId { get; set; }
-        
-        //public string Semester { get; set; }
 
         public int semester { get; set; }
         public string? Address { get; set; }
@@ -31,8 +30,5 @@ namespace LMS.Models
         public string? State { get; set; }
         public string? Country { get; set; }
         public string? ZipCode { get; set; }
-
-        // ✅ Key Relationship (Student → Courses via junction table)
-       
     }
 }

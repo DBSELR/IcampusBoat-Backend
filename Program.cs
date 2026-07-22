@@ -9,8 +9,7 @@ using LMS.Services;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.SignalR;
-using LMS.Models;
-using LMS.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,11 +47,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer = false,
-        ValidateAudience = false,
+        ValidateIssuer = true,
+        ValidateAudience = true,
         ValidateLifetime = true,
-        ValidateIssuerSigningKey = false,
-        IssuerSigningKey = new SymmetricSecurityKey(key)
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
     };
 
     options.Events = new JwtBearerEvents
@@ -99,8 +101,10 @@ builder.Services.AddAuthorization(options =>
 // Services
 // ================================
 
-builder.Services.AddScoped<IAuthService, AuthService>();
+//builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddTransient<SqlScriptExecutor>();
+
+
 
 
 
@@ -120,15 +124,18 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy
-            .WithOrigins(
-                "http://localhost:3000",
-                "http://localhost:3001"
-              
-            )
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();
+        policy.WithOrigins(
+            "http://localhost:3000",
+            "http://localhost:3001",
+            "http://localhost:5173",
+            "http://localhost:8100",
+            "http://localhost:8102",
+             "http://localhost:8103",
+             "http://localhost:8101"
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials();
     });
 });
 
@@ -203,7 +210,6 @@ app.UseSwaggerUI();
 // HTTPS
 // ================================
 app.UseHttpsRedirection();
-
 // ================================
 // Routing
 // ================================

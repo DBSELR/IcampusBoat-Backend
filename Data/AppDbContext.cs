@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using LMS.Models;
-using LMS.Controllers;
-
+using IcampusBoatBackend.Controllers;
 namespace LMS.Data
 {
     public class AppDbContext : DbContext

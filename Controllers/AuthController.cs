@@ -1,16 +1,21 @@
 
+using DocumentFormat.OpenXml.Bibliography;
 using DocumentFormat.OpenXml.Office.Word;
+using IcampusBoatBackend;
 using LMS.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,7 +23,7 @@ using System.Threading.Tasks;
 //vinesh
 //fghjgfytfgn
 
-namespace LMS.Controllers
+namespace IcampusBoatBackend.Controllers
 {
     [AllowAnonymous]
     [Route("api/[controller]")]
@@ -26,134 +31,244 @@ namespace LMS.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IConfiguration _configuration;
-        private readonly IAuthService _authService;
-        private readonly IHubContext<SessionHub> _hubContext;
-        public AuthController(IConfiguration configuration, IAuthService authService, IHubContext<SessionHub> hubContext)
+
+        public AuthController(IConfiguration configuration)
         {
             _configuration = configuration;
-            _authService = authService;
-            _hubContext = hubContext;
         }
 
-        [HttpPost("Login")]
-
-        public async Task<ActionResult<string>> Login([FromBody] LoginRequest LoginRequest)
+        [HttpGet]
+        [Route("Login")]
+        public IActionResult Login(string UserId, string Password)
         {
-            var connStr = _configuration.GetConnectionString("DefaultConnection");
-
-            string UserID = "";
-            string passwordHash = "";
-            string USERGROUP = "";
-
-
-            using (var connAuth = new SqlConnection(connStr))
-
-            using (var cmd = new SqlCommand("[SP_LOGIN_CHECK]", connAuth))
+            try
             {
-                cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.AddWithValue("@USERID", LoginRequest.userId);
-                cmd.Parameters.AddWithValue("@PWD", LoginRequest.Password);
-
-
-                await connAuth.OpenAsync();
-                using var reader = await cmd.ExecuteReaderAsync();
-
-
-
-                if (await reader.ReadAsync())
+                using (SqlConnection con = new SqlConnection(DAL.SQLConnString))
                 {
-                    UserID = reader.GetString(reader.GetOrdinal("USERGROUP"));
-                    USERGROUP = reader.GetString(reader.GetOrdinal("SUBGROUP"));
-                }
-                else
-                {
-                    return Unauthorized("Invalid credentials.");
-                }
-            }
+                    con.Open();
 
-            //// 4) Issue token
-            var token = await _authService.GenerateJwtTokenAsync(UserID, USERGROUP, 14400);
+                    using SqlCommand sqlcmd = new SqlCommand("SP_LOGIN_CHECK", con);
+
+                    sqlcmd.CommandType = CommandType.StoredProcedure;
+
+                    sqlcmd.Parameters.Add("@USERID", SqlDbType.VarChar, 255).Value = UserId;
+                    sqlcmd.Parameters.Add("@PWD", SqlDbType.VarChar, 64).Value = Password;
 
 
-            return Ok(new
-            {
-                token,
-                message = "Login Successful"
+                    using SqlDataReader reader = sqlcmd.ExecuteReader();
 
-            });
-        }
-
-        //.....ChangePassword.....//
-
-
-        [HttpPost("ChangePassword")]
-        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
-        {
-            var connStr = _configuration.GetConnectionString("DefaultConnection");
-
-            string currentPassword = "";
-
-            // Step 1: Get current password
-            using (var conn = new SqlConnection(connStr))
-            using (var cmd = new SqlCommand("sp_GetChangeUserPassword", conn))
-            {
-                cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.AddWithValue("@USERID", request.USERID);
-
-                await conn.OpenAsync();
-
-                using (var reader = await cmd.ExecuteReaderAsync())
-                {
-                    if (await reader.ReadAsync())
+                    if (!reader.Read())
                     {
-                        currentPassword = reader["PWord"].ToString();
+                        return Unauthorized(new
+                        {
+                            message = "Invalid User ID or Password"
+                        });
                     }
+
+
+                    string userId = reader["USERGROUP"].ToString();
+                    string userName = reader["USERNAME"].ToString();
+                    string userGroup = reader["SUBGROUP"].ToString();
+
+
+                    var claims = new List<Claim>
+                             {
+                                //new Claim("UserID", UserId),
+                                new Claim(ClaimTypes.Name, UserId),
+                                new Claim(ClaimTypes.Role, userGroup),
+                                new Claim("Regno", UserId),
+                                new Claim("SSNO",UserId),
+                                new Claim("UserGroup", userGroup)
+                             };
+
+
+                    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+                    var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+                    var token = new JwtSecurityToken(
+                        issuer: _configuration["Jwt:Issuer"],
+                        audience: _configuration["Jwt:Audience"],
+                        claims: claims,
+                        expires: DateTime.UtcNow.AddMinutes(30),
+                        signingCredentials: signIn);
+
+
+
+                    string tokenValue = new JwtSecurityTokenHandler().WriteToken(token);
+
+                    //var token = await _authService.GenerateJwtTokenAsync(userId, userGroup, 14400);
+
+                    return Ok(new
+                    {
+
+                        token = tokenValue,
+                        user = new
+                        {
+                            userId,
+                            userName,
+                            userGroup,
+                            message = "Login Successful"
+                        }
+
+                    });
                 }
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.ToString());
+            }
+        }
+
+        //[HttpGet]
+        //[Route("Load_Menu")]
+        //public IActionResult Load_Menu(string UserId, string Password)
+        //{
+        //    using (SqlConnection con = new SqlConnection(DAL.SQLConnString))
+        //    {
+        //        using (SqlCommand sqlcmd = new SqlCommand("SP_LOGIN_CHECK", con))
+        //        {
+        //            sqlcmd.CommandType = CommandType.StoredProcedure;
+        //            sqlcmd.Parameters.Add("@USERID", SqlDbType.VarChar, 255).Value = UserId;
+        //            sqlcmd.Parameters.Add("@PWD", SqlDbType.VarChar, 64).Value = Password;
+
+        //            //DataTable dt = DAL.GetData_FrmSP(sqlcmd, DAL.QueryType.SP);
+        //            con.Open();
+
+        //            using SqlDataReader reader = sqlcmd.ExecuteReader();
+
+        //            List<object> menus = new List<object>();
+
+        //            while (reader.Read())
+        //            {
+        //                menus.Add(new
+        //                {
+        //                    MenuId = reader["MENUID"].ToString(),
+        //                    MenuName = reader["MENUNAME"].ToString(),
+        //                    SubGroup = reader["SUBGROUP"].ToString()
+        //                });
+        //            }
+
+        //            if (menus.Count == 0)
+        //            {
+        //                return NotFound("No menu found.");
+        //            }
+
+        //            return Ok(menus);
+
+        //        }
+        //    }
+        //}
+
+
+        //[HttpGet]
+        //[Route("Load_Sub_Menu")]
+        //public IActionResult Load_Sub_Menu(string UserId)
+        //{
+        //    using (SqlConnection con = new SqlConnection(DAL.SQLConnString))
+        //    {
+        //        using (SqlCommand sqlcmd = new SqlCommand("[SP_LOAD_USER_SUBMENUS]", con))
+        //        {
+        //            sqlcmd.CommandType = CommandType.StoredProcedure;
+        //            sqlcmd.Parameters.Add("@USERID", SqlDbType.VarChar, 255).Value = UserId;
+
+        //            con.Open();
+
+        //            using SqlDataReader reader = sqlcmd.ExecuteReader();
+
+        //            List<object> submenus = new List<object>();
+
+        //            while (reader.Read())
+        //            {
+        //                submenus.Add(new
+        //                {
+        //                    MenuId = reader["MENUID"].ToString(),
+        //                    SMenuId = reader["SMENUID"].ToString(),
+        //                    SMenuName = reader["SubMenuNam"].ToString(),
+        //                    MenuName = reader["MENUNAME"].ToString(),
+        //                    SubGroup = reader["SUBGROUP"].ToString(),
+        //                    formtye= reader["formtype"].ToString(),
+        //                    Route = reader["FORM"].ToString(),
+        //                });
+        //            }
+
+        //            if (submenus.Count == 0)
+        //            {
+        //                return NotFound("No menu found.");
+        //            }
+
+        //            return Ok(submenus);
+
+        //        }
+        //    }
+        //    }
+        [Authorize]
+        [HttpGet]
+        [Route("Load_Sub_Menu")]
+        public IActionResult Load_Sub_Menu()
+        {
+            // Get the logged-in user from the JWT
+            var userId = User.Identity?.Name;
+
+            // If not found, try reading the claim directly
+            if (string.IsNullOrEmpty(userId))
+            {
+                userId = User.Claims
+                             .FirstOrDefault(c =>
+                                 c.Type == ClaimTypes.Name || c.Type == "name" || c.Type == "UserID")
+                             ?.Value;
             }
 
-            if (string.IsNullOrEmpty(currentPassword))
+            if (string.IsNullOrEmpty(userId))
             {
-                return NotFound(new { message = "User not found." });
+                return Unauthorized(new
+                {
+                    Message = "UserId not found in JWT.",
+                    Claims = User.Claims.Select(c => new
+                    {
+                        c.Type,
+                        c.Value
+                    })
+                });
             }
 
+            using SqlConnection con = new SqlConnection(DAL.SQLConnString);
+            using SqlCommand sqlcmd = new SqlCommand("SP_LOAD_USER_SUBMENUS", con);
 
-            // Step 2: Check old password
-            if (request.OldPassword != currentPassword)
+            sqlcmd.CommandType = CommandType.StoredProcedure;
+            sqlcmd.Parameters.AddWithValue("@USERID", userId);
+
+            con.Open();
+
+            using SqlDataReader reader = sqlcmd.ExecuteReader();
+
+            List<object> submenus = new();
+
+            while (reader.Read())
             {
-                return Unauthorized(new { message = "Old password is incorrect." });
+                submenus.Add(new
+                {
+                    MenuId = reader["MENUID"].ToString(),
+                    SMenuId = reader["SMENUID"].ToString(),
+                    SMenuName = reader["SubMenuNam"].ToString(),
+                    MenuName = reader["MENUNAME"].ToString(),
+                    SubGroup = reader["SUBGROUP"].ToString(),
+                    FormType = reader["FORMTYPE"].ToString(),
+                    Route = reader["FORM"].ToString(),
+                });
             }
 
-
-            // Step 3: Update new password
-            using (var conn = new SqlConnection(connStr))
-            using (var cmd = new SqlCommand("[sp_UpdateUserPassword]", conn))
-            {
-                cmd.CommandType = CommandType.StoredProcedure;
-
-                cmd.Parameters.AddWithValue("@USERID", request.USERID);
-                cmd.Parameters.AddWithValue("@NewPassword", request.NewPassword);
-
-                await conn.OpenAsync();
-                await cmd.ExecuteNonQueryAsync();
-            }
-
-
-            return Ok(new
-            {
-                message = "Password changed successfully."
-            });
+            return Ok(submenus);
         }
 
     }
 
-
-
-    public class LoginRequest
-    {
-        public string userId { get; set; }
-        public string Password { get; set; }
-    }
-    public class ChangePasswordRequest
+        //public class LoginRequest
+        //{
+        //    public string userId { get; set; }
+        //    public string Password { get; set; }
+        //}
+        public class ChangePasswordRequest
     {
         public string? USERID { get; set; }
         public string? OldPassword { get; set; }
