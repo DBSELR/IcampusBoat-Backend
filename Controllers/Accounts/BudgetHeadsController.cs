@@ -10,11 +10,11 @@ namespace IcampusBoatBackend.Controllers.Accounts
     [AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
-    public class PaymentHeadsController : ControllerBase
+    public class BudgetHeadsController : ControllerBase
     {
         private readonly IConfiguration _configuration;
 
-        public PaymentHeadsController(IConfiguration configuration)
+        public BudgetHeadsController(IConfiguration configuration)
         {
             _configuration = configuration;
         }
@@ -32,49 +32,13 @@ namespace IcampusBoatBackend.Controllers.Accounts
         }
 
         /// <summary>
-        /// Retrieves the distinct list of Bank Heads for combobox loading (BH_LIST)
+        /// Retrieves the list of budget heads
         /// Parameters: 0 (<= 2, uses method params)
-        /// </summary>
-        [AllowAnonymous]
-        [HttpGet]
-        [Route("BankHeadsList")]
-        public IActionResult BankHeadsList()
-        {
-            try
-            {
-                var result = new List<object>();
-                using (SqlConnection con = new SqlConnection(DAL.SQLConnString))
-                {
-                    con.Open();
-                    string query = "SELECT DISTINCT BH.BHNAME, BH.BHSNAME FROM TBL_BUDGET B INNER JOIN TBL_BUDGET_HEADS BH ON B.BHSNAME=BH.BHSNAME";
-                    using (SqlCommand cmd = new SqlCommand(query, con))
-                    {
-                        cmd.CommandType = CommandType.Text;
-                        using (SqlDataReader reader = cmd.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                result.Add(ReadRow(reader));
-                            }
-                        }
-                    }
-                }
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { success = false, message = ex.Message });
-            }
-        }
-
-        /// <summary>
-        /// Gets the list of payment heads for a given academic year
-        /// Parameters: 1 (<= 2, uses method param)
         /// </summary>
         [AllowAnonymous]
         [HttpGet]
         [Route("HeadsMasterList")]
-        public IActionResult HeadsMasterList(string? academicYear)
+        public IActionResult HeadsMasterList()
         {
             try
             {
@@ -82,11 +46,9 @@ namespace IcampusBoatBackend.Controllers.Accounts
                 using (SqlConnection con = new SqlConnection(DAL.SQLConnString))
                 {
                     con.Open();
-                    using (SqlCommand cmd = new SqlCommand("SP_PAYMENT_HEADSMASTER_LIST", con))
+                    using (SqlCommand cmd = new SqlCommand("SP_BUDGET_HEADS_LIST", con))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.Parameters.AddWithValue("@ACADEMICYEAR", (object?)academicYear ?? DBNull.Value);
-
                         using (SqlDataReader reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
@@ -105,23 +67,24 @@ namespace IcampusBoatBackend.Controllers.Accounts
         }
 
         /// <summary>
-        /// Computes the next order number for a new Payment Head
-        /// Parameters: 0 (<= 2, uses method params)
+        /// Computes the next order number for a budget head in an academic year
+        /// Parameters: 1 (<= 2, uses method param)
         /// </summary>
         [AllowAnonymous]
         [HttpGet]
         [Route("GetNextOrder")]
-        public IActionResult GetNextOrder()
+        public IActionResult GetNextOrder(string? academicYear)
         {
             try
             {
                 using (SqlConnection con = new SqlConnection(DAL.SQLConnString))
                 {
                     con.Open();
-                    string query = "SELECT ISNULL(MAX([ORDER]), 0) AS MORDER FROM TBL_PAYMENT_HEADS";
+                    string query = "SELECT ISNULL(MAX([ORDER]), 0) AS MORDER FROM TBL_BUDGET_HEADS WHERE ACADEMICYEAR = @AcademicYear";
                     using (SqlCommand cmd = new SqlCommand(query, con))
                     {
                         cmd.CommandType = CommandType.Text;
+                        cmd.Parameters.AddWithValue("@AcademicYear", (object?)academicYear ?? DBNull.Value);
                         var maxOrderObj = cmd.ExecuteScalar();
                         int maxOrder = (maxOrderObj != null && maxOrderObj != DBNull.Value) ? Convert.ToInt32(maxOrderObj) : 0;
                         int nextOrder = maxOrder + 1;
@@ -136,13 +99,13 @@ namespace IcampusBoatBackend.Controllers.Accounts
         }
 
         /// <summary>
-        /// Gets specific payment head data by short name (PHSNAME)
-        /// Parameters: 1 (<= 2, uses method param)
+        /// Gets specific budget head data by name and academic year
+        /// Parameters: 2 (<= 2, uses method params)
         /// </summary>
         [AllowAnonymous]
         [HttpGet]
         [Route("GetPHData")]
-        public IActionResult GetPHData(string? phsName)
+        public IActionResult GetPHData(string? academicYear, string? phName)
         {
             try
             {
@@ -150,10 +113,10 @@ namespace IcampusBoatBackend.Controllers.Accounts
                 using (SqlConnection con = new SqlConnection(DAL.SQLConnString))
                 {
                     con.Open();
-                    using (SqlCommand cmd = new SqlCommand("SP_PAYMENT_GETPH_DATA", con))
+                    using (SqlCommand cmd = new SqlCommand("SP_BUDGET_GET_DATA", con))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.Parameters.AddWithValue("@PSNAME", (object?)phsName ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("@BSNAME", (object?)phName ?? DBNull.Value);
 
                         using (SqlDataReader reader = cmd.ExecuteReader())
                         {
@@ -173,29 +136,28 @@ namespace IcampusBoatBackend.Controllers.Accounts
         }
 
         /// <summary>
-        /// Saves or updates a Payment Head record
-        /// Parameters: 7 (> 2, uses [FromBody] PaymentHeads model)
+        /// Saves or updates a budget head record
+        /// Parameters: 6 (> 2, uses [FromBody] BudgetHeads model)
         /// </summary>
         [AllowAnonymous]
         [HttpPost]
         [Route("SaveHeadsMaster")]
-        public IActionResult SaveHeadsMaster([FromBody] PaymentHeads model)
+        public IActionResult SaveHeadsMaster([FromBody] BudgetHeads model)
         {
             try
             {
                 using (SqlConnection con = new SqlConnection(DAL.SQLConnString))
                 {
                     con.Open();
-                    using (SqlCommand cmd = new SqlCommand("SP_PAYMENT_HEADS_SAVE", con))
+                    using (SqlCommand cmd = new SqlCommand("SP_BUDGET_HEADS_SAVE", con))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@ID", string.IsNullOrEmpty(model.ID) ? "0" : model.ID);
                         cmd.Parameters.AddWithValue("@ACADEMICYEAR", (object?)model.AcademicYear ?? DBNull.Value);
                         cmd.Parameters.AddWithValue("@FYEAR", (object?)model.FYEAR ?? DBNull.Value);
                         cmd.Parameters.AddWithValue("@ORDER", (object?)model.ORDER ?? DBNull.Value);
-                        cmd.Parameters.AddWithValue("@PHNAME", (object?)model.PHNAME ?? DBNull.Value);
-                        cmd.Parameters.AddWithValue("@PHSNAME", (object?)model.PHSNAME ?? DBNull.Value);
-                        cmd.Parameters.AddWithValue("@BHSNAME", (object?)model.BHSNAME ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("@BHNAME", (object?)model.PHNAME ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("@BHSNAME", (object?)model.PHSNAME ?? DBNull.Value);
 
                         int rowsAffected = cmd.ExecuteNonQuery();
                         bool isNew = string.IsNullOrEmpty(model.ID) || model.ID == "0";
@@ -212,7 +174,7 @@ namespace IcampusBoatBackend.Controllers.Accounts
         }
 
         /// <summary>
-        /// Deletes a Payment Head record by ID
+        /// Deletes a budget head record by ID
         /// Parameters: 1 (<= 2, uses method param)
         /// </summary>
         [AllowAnonymous]
@@ -225,7 +187,7 @@ namespace IcampusBoatBackend.Controllers.Accounts
                 using (SqlConnection con = new SqlConnection(DAL.SQLConnString))
                 {
                     con.Open();
-                    using (SqlCommand cmd = new SqlCommand("SP_PAYMENT_HEADSMASTER_DELETE", con))
+                    using (SqlCommand cmd = new SqlCommand("SP_BUDGET_HEAD_DELETE", con))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@ID", (object?)id ?? DBNull.Value);
@@ -240,48 +202,6 @@ namespace IcampusBoatBackend.Controllers.Accounts
                 return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
-
-        /// <summary>
-        /// Autocomplete search for account numbers matching prefix
-        /// Parameters: 1 (<= 2, uses method param)
-        /// </summary>
-        [AllowAnonymous]
-        [HttpGet]
-        [Route("SearchAccountNo")]
-        public IActionResult SearchAccountNo(string? accountNo)
-        {
-            try
-            {
-                var result = new List<string>();
-                using (SqlConnection con = new SqlConnection(DAL.SQLConnString))
-                {
-                    con.Open();
-                    string query = "SELECT DISTINCT ACCOUNTNO FROM TBL_PAYMENT_HEADS WHERE ACCOUNTNO LIKE @ACCOUNTNO + '%'";
-                    using (SqlCommand cmd = new SqlCommand(query, con))
-                    {
-                        cmd.CommandType = CommandType.Text;
-                        cmd.Parameters.AddWithValue("@ACCOUNTNO", (object?)accountNo ?? DBNull.Value);
-
-                        using (SqlDataReader reader = cmd.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                if (!reader.IsDBNull(0))
-                                {
-                                    result.Add(reader.GetString(0));
-                                }
-                            }
-                        }
-                    }
-                }
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { success = false, message = ex.Message });
-            }
-        }
     }
 }
-
 

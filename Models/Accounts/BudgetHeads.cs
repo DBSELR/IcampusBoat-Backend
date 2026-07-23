@@ -1,6 +1,6 @@
 namespace IcampusBoatBackend.Models.Accounts
 {
-    public class PaymentHeads
+    public class BudgetHeads
     {
         public string? ID { get; set; }
         public string? AcademicYear { get; set; }
@@ -9,7 +9,6 @@ namespace IcampusBoatBackend.Models.Accounts
         public string? PHNAME { get; set; }
         public string? PHSNAME { get; set; }
         public string? ACCOUNTNO { get; set; }
-        public string? BHSNAME { get; set; }
     }
 }
 
