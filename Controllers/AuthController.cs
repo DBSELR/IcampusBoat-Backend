@@ -65,7 +65,7 @@ namespace IcampusBoatBackend.Controllers
                     }
 
 
-                    string userId = string.IsNullOrEmpty(UserId) ? reader["USERGROUP"].ToString() : UserId;
+                    string userId = string.IsNullOrEmpty(bol.USERID) ? reader["USERGROUP"]?.ToString() ?? "" : bol.USERID;
                     string userName = reader["USERNAME"]?.ToString() ?? "";
                     string userGroup = reader["SUBGROUP"]?.ToString() ?? "";
 
