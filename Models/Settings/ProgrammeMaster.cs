@@ -7,7 +7,7 @@
         public string? COURSE { get; set; }
         public string? DEGREE { get; set; }
         public string? YEAR { get; set; }
-        public string AcademicYear { get; set; } = string.Empty;
-        public string? FinancialYear { get; set; }
+        public string ACADEMICYEAR { get; set; } = string.Empty;
+        public string? FINANCIALYEAR { get; set; }
     }
 }

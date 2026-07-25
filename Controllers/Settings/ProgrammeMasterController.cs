@@ -22,9 +22,9 @@ namespace IcampusBoatBackend.Controllers.Settings
             var row = new Dictionary<string, object>();
             for (int i = 0; i < reader.FieldCount; i++)
             {
-                var name = reader.GetName(i);
-                var camel = char.ToLowerInvariant(name[0]) + name.Substring(1);
-                row[camel] = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                var name = reader.GetName(i).ToUpperInvariant();
+                //var camel = char.ToLowerInvariant(name[0]) + name.Substring(1);
+                row[name] = reader.IsDBNull(i) ? null : reader.GetValue(i);
             }
             return row;
         }
@@ -40,7 +40,7 @@ namespace IcampusBoatBackend.Controllers.Settings
                 {
                     using (var cmd = new SqlCommand("SP_ADM_COURSE_LIST", con) { CommandType = CommandType.StoredProcedure })
                     {
-                        cmd.Parameters.AddWithValue("@AcademicYear", (object?)prog.AcademicYear ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("@AcademicYear", (object?)prog.ACADEMICYEAR ?? DBNull.Value);
 
                         con.Open();
                         using (var reader = cmd.ExecuteReader())
@@ -75,8 +75,8 @@ namespace IcampusBoatBackend.Controllers.Settings
                         cmd.Parameters.AddWithValue("@COURSE", (object?)prog.COURSE ?? DBNull.Value);
                         cmd.Parameters.AddWithValue("@DEGREE", (object?)prog.DEGREE ?? DBNull.Value);
                         cmd.Parameters.AddWithValue("@YEAR", (object?)prog.YEAR ?? DBNull.Value);
-                        cmd.Parameters.AddWithValue("@AcademicYear", (object?)prog.AcademicYear ?? DBNull.Value);
-                        cmd.Parameters.AddWithValue("@FinancialYear", (object?)prog.FinancialYear ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("@AcademicYear", (object?)prog.ACADEMICYEAR ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("@FinancialYear", (object?)prog.FINANCIALYEAR ?? DBNull.Value);
 
                         con.Open();
                         int rowsAffected = cmd.ExecuteNonQuery();
@@ -133,7 +133,7 @@ namespace IcampusBoatBackend.Controllers.Settings
                 {
                     using (var cmd = new SqlCommand("select * from tbl_Adm_Course where AcademicYear=@AcademicYear And CourseCode=@CourseCode", con))
                     {
-                        cmd.Parameters.AddWithValue("@AcademicYear", (object?)prog.AcademicYear ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("@AcademicYear", (object?)prog.ACADEMICYEAR ?? DBNull.Value);
                         cmd.Parameters.AddWithValue("@CourseCode", (object?)prog.COURSECODE ?? DBNull.Value);
 
                         con.Open();
