@@ -292,9 +292,9 @@ namespace IcampusBoatBackend.Controllers.Settings
             }
         }
 
-        [HttpPost]
+        [HttpDelete]
         [Route("DeleteFaculty")]
-        public IActionResult DeleteFaculty([FromBody] IcampusBoatBackend.Models.Settings.FacultyMaster FM)
+        public IActionResult DeleteFaculty(string id)
         {
             try
             {
@@ -302,8 +302,6 @@ namespace IcampusBoatBackend.Controllers.Settings
                 {
                     using (var cmd = new SqlCommand("SP_FACULTY_DELETE", con) { CommandType = CommandType.StoredProcedure })
                     {
-                        cmd.Parameters.AddWithValue("@ID", (object?)FM.id ?? DBNull.Value);
-
                         con.Open();
                         int rowsAffected = cmd.ExecuteNonQuery();
 
