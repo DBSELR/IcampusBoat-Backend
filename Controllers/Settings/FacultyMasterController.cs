@@ -302,6 +302,8 @@ namespace IcampusBoatBackend.Controllers.Settings
                 {
                     using (var cmd = new SqlCommand("SP_FACULTY_DELETE", con) { CommandType = CommandType.StoredProcedure })
                     {
+                        cmd.Parameters.AddWithValue("@ID", (object?)id ?? DBNull.Value);
+
                         con.Open();
                         int rowsAffected = cmd.ExecuteNonQuery();
 
