@@ -22,9 +22,8 @@ namespace IcampusBoatBackend.Controllers.Settings
             var row = new Dictionary<string, object>();
             for (int i = 0; i < reader.FieldCount; i++)
             {
-                var name = reader.GetName(i);
-                var camel = char.ToLowerInvariant(name[0]) + name.Substring(1);
-                row[camel] = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                var name = reader.GetName(i).ToUpperInvariant();
+                row[name] = reader.IsDBNull(i) ? null : reader.GetValue(i);
             }
             return row;
         }
@@ -42,7 +41,7 @@ namespace IcampusBoatBackend.Controllers.Settings
                     using (SqlCommand cmd = new SqlCommand("SP_ADM_BRANCH_LIST", con))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.Parameters.AddWithValue("@AcademicYear", (object?)bol.AcademicYear ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("@AcademicYear", (object?)bol.ACADEMICYEAR ?? DBNull.Value);
 
                         using (SqlDataReader reader = cmd.ExecuteReader())
                         {
@@ -111,13 +110,13 @@ namespace IcampusBoatBackend.Controllers.Settings
                                 cmd.CommandType = CommandType.StoredProcedure;
                                 cmd.Parameters.AddWithValue("@BID", (object?)bol.BID ?? DBNull.Value);
                                 cmd.Parameters.AddWithValue("@COURSE", (object?)bol.COURSE ?? DBNull.Value);
-                                cmd.Parameters.AddWithValue("@Department", (object?)bol.Department ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@Department", (object?)bol.DEPARTMENT ?? DBNull.Value);
                                 cmd.Parameters.AddWithValue("@BRANCHCODE", (object?)bol.BRANCHCODE ?? DBNull.Value);
-                                cmd.Parameters.AddWithValue("@BRANCHShortNAME", (object?)bol.BRANCHShortNAME ?? DBNull.Value);
-                                cmd.Parameters.AddWithValue("@BranchName", (object?)bol.BranchName ?? DBNull.Value);
-                                cmd.Parameters.AddWithValue("@AcademicYear", (object?)bol.AcademicYear ?? DBNull.Value);
-                                cmd.Parameters.AddWithValue("@FinancialYear", (object?)bol.FinancialYear ?? DBNull.Value);
-                                cmd.Parameters.AddWithValue("@Fed", (object?)bol.Fed ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@BRANCHShortNAME", (object?)bol.BRANCHSHORTNAME ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@BranchName", (object?)bol.BRANCHNAME ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@AcademicYear", (object?)bol.ACADEMICYEAR ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@FinancialYear", (object?)bol.FINANCIALYEAR ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@Fed", (object?)bol.FED ?? DBNull.Value);
                                 cmd.ExecuteNonQuery();
                             }
 
@@ -132,7 +131,7 @@ namespace IcampusBoatBackend.Controllers.Settings
                             int maxYR = 0;
                             using (var cmdMax = new SqlCommand("Select [YEAR] from tbl_Adm_Course where AcademicYear=@AcademicYear And coursecode=@coursecode", con, transaction))
                             {
-                                cmdMax.Parameters.AddWithValue("@AcademicYear", (object?)bol.AcademicYear ?? DBNull.Value);
+                                cmdMax.Parameters.AddWithValue("@AcademicYear", (object?)bol.ACADEMICYEAR ?? DBNull.Value);
                                 cmdMax.Parameters.AddWithValue("@coursecode", (object?)bol.COURSE ?? DBNull.Value);
                                 var maxResult = cmdMax.ExecuteScalar();
                                 if (maxResult != null && maxResult != DBNull.Value)
@@ -144,19 +143,19 @@ namespace IcampusBoatBackend.Controllers.Settings
                             // 4. Save Branch Dept in a loop
                             for (int i = 1; i <= maxYR; i++)
                             {
-                                if (bol.Fed != "0" && i == 1)
+                                if (bol.FED != "0" && i == 1)
                                 {
                                     using (var cmdDep1 = new SqlCommand("SP_ADM_BRANCH_Dep_SAVE", con, transaction))
                                     {
                                         cmdDep1.CommandType = CommandType.StoredProcedure;
                                         cmdDep1.Parameters.AddWithValue("@BID", (object?)bol.BID ?? DBNull.Value);
                                         cmdDep1.Parameters.AddWithValue("@COURSE", (object?)bol.COURSE ?? DBNull.Value);
-                                        cmdDep1.Parameters.AddWithValue("@Department", (object?)bol.Fed ?? DBNull.Value);
+                                        cmdDep1.Parameters.AddWithValue("@Department", (object?)bol.FED ?? DBNull.Value);
                                         cmdDep1.Parameters.AddWithValue("@BRANCHCODE", (object?)bol.BRANCHCODE ?? DBNull.Value);
-                                        cmdDep1.Parameters.AddWithValue("@BRANCHShortNAME", (object?)bol.BRANCHShortNAME ?? DBNull.Value);
-                                        cmdDep1.Parameters.AddWithValue("@BranchName", (object?)bol.BranchName ?? DBNull.Value);
-                                        cmdDep1.Parameters.AddWithValue("@AcademicYear", (object?)bol.AcademicYear ?? DBNull.Value);
-                                        cmdDep1.Parameters.AddWithValue("@FinancialYear", (object?)bol.FinancialYear ?? DBNull.Value);
+                                        cmdDep1.Parameters.AddWithValue("@BRANCHShortNAME", (object?)bol.BRANCHSHORTNAME ?? DBNull.Value);
+                                        cmdDep1.Parameters.AddWithValue("@BranchName", (object?)bol.BRANCHNAME ?? DBNull.Value);
+                                        cmdDep1.Parameters.AddWithValue("@AcademicYear", (object?)bol.ACADEMICYEAR ?? DBNull.Value);
+                                        cmdDep1.Parameters.AddWithValue("@FinancialYear", (object?)bol.FINANCIALYEAR ?? DBNull.Value);
                                         cmdDep1.Parameters.AddWithValue("@YR", i);
                                         cmdDep1.ExecuteNonQuery();
                                     }
@@ -167,12 +166,12 @@ namespace IcampusBoatBackend.Controllers.Settings
                                     cmdDep2.CommandType = CommandType.StoredProcedure;
                                     cmdDep2.Parameters.AddWithValue("@BID", (object?)bol.BID ?? DBNull.Value);
                                     cmdDep2.Parameters.AddWithValue("@COURSE", (object?)bol.COURSE ?? DBNull.Value);
-                                    cmdDep2.Parameters.AddWithValue("@Department", (object?)bol.Department ?? DBNull.Value);
+                                    cmdDep2.Parameters.AddWithValue("@Department", (object?)bol.DEPARTMENT ?? DBNull.Value);
                                     cmdDep2.Parameters.AddWithValue("@BRANCHCODE", (object?)bol.BRANCHCODE ?? DBNull.Value);
-                                    cmdDep2.Parameters.AddWithValue("@BRANCHShortNAME", (object?)bol.BRANCHShortNAME ?? DBNull.Value);
-                                    cmdDep2.Parameters.AddWithValue("@BranchName", (object?)bol.BranchName ?? DBNull.Value);
-                                    cmdDep2.Parameters.AddWithValue("@AcademicYear", (object?)bol.AcademicYear ?? DBNull.Value);
-                                    cmdDep2.Parameters.AddWithValue("@FinancialYear", (object?)bol.FinancialYear ?? DBNull.Value);
+                                    cmdDep2.Parameters.AddWithValue("@BRANCHShortNAME", (object?)bol.BRANCHSHORTNAME ?? DBNull.Value);
+                                    cmdDep2.Parameters.AddWithValue("@BranchName", (object?)bol.BRANCHNAME ?? DBNull.Value);
+                                    cmdDep2.Parameters.AddWithValue("@AcademicYear", (object?)bol.ACADEMICYEAR ?? DBNull.Value);
+                                    cmdDep2.Parameters.AddWithValue("@FinancialYear", (object?)bol.FINANCIALYEAR ?? DBNull.Value);
                                     cmdDep2.Parameters.AddWithValue("@YR", i);
                                     cmdDep2.ExecuteNonQuery();
                                 }
@@ -235,9 +234,9 @@ namespace IcampusBoatBackend.Controllers.Settings
                     con.Open();
                     using (SqlCommand cmd = new SqlCommand("Select * from tbl_Adm_Branch where AcademicYear=@AcademicYear And coursecode=@COURSE and Dept=@Department and BranchCode = @BRANCHCODE", con))
                     {
-                        cmd.Parameters.AddWithValue("@AcademicYear", (object?)bol.AcademicYear ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("@AcademicYear", (object?)bol.ACADEMICYEAR ?? DBNull.Value);
                         cmd.Parameters.AddWithValue("@COURSE", (object?)bol.COURSE ?? DBNull.Value);
-                        cmd.Parameters.AddWithValue("@Department", (object?)bol.Department ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Department", (object?)bol.DEPARTMENT ?? DBNull.Value);
                         cmd.Parameters.AddWithValue("@BRANCHCODE", (object?)bol.BRANCHCODE ?? DBNull.Value);
 
                         using (SqlDataReader reader = cmd.ExecuteReader())

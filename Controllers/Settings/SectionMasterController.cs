@@ -16,9 +16,8 @@ namespace IcampusBoatBackend.Controllers.Settings
             var row = new Dictionary<string, object>();
             for (int i = 0; i < reader.FieldCount; i++)
             {
-                var name = reader.GetName(i);
-                var camel = char.ToLowerInvariant(name[0]) + name.Substring(1);
-                row[camel] = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                var name = reader.GetName(i).ToUpperInvariant();
+                row[name] = reader.IsDBNull(i) ? null : reader.GetValue(i);
             }
             return row;
         }
