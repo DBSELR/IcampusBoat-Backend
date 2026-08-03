@@ -1,8 +1,10 @@
+using ExcelDataReader;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using System.Text;
 
 namespace IcampusBoatBackend.Controllers.Settings
 {
@@ -146,49 +148,147 @@ namespace IcampusBoatBackend.Controllers.Settings
             }
         }
 
+        //[HttpPost]
+        //[Route("InsertStudentData")]
+        //public IActionResult InsertStudentData([FromBody] IcampusBoatBackend.Models.Settings.StudentDataUpload bol)
+        //{
+        //    try
+        //    {
+        //        DataTable dt = new DataTable();
+        //        if (bol.StudentData != null && bol.StudentData.Count > 0)
+        //        {
+        //            var keys = new HashSet<string>();
+        //            foreach (var dict in bol.StudentData)
+        //            {
+        //                foreach (var key in dict.Keys)
+        //                {
+        //                    keys.Add(key);
+        //                }
+        //            }
+        //            foreach (var key in keys)
+        //            {
+        //                dt.Columns.Add(key, typeof(object));
+        //            }
+        //            foreach (var dict in bol.StudentData)
+        //            {
+        //                var row = dt.NewRow();
+        //                foreach (var key in keys)
+        //                {
+        //                    row[key] = dict.ContainsKey(key) ? dict[key] ?? DBNull.Value : DBNull.Value;
+        //                }
+        //                dt.Rows.Add(row);
+        //            }
+        //        }
+
+        //        using (SqlConnection con = new SqlConnection(IcampusBoatBackend.DAL.SQLConnString))
+        //        {
+        //            using (SqlCommand cmd = new SqlCommand("[SP_Import_studentData]", con) { CommandType = CommandType.StoredProcedure })
+        //            {
+        //                var param = cmd.Parameters.Add(new SqlParameter("@EAZYPAYDT", SqlDbType.Structured));
+        //                param.Value = dt;
+
+        //                con.Open();
+        //                int rowsAffected = cmd.ExecuteNonQuery();
+
+        //                return Ok(new { message = "Success", rowsAffected = rowsAffected });
+        //            }
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, ex.Message);
+        //    }
+        //}
+
+
+
         [HttpPost]
         [Route("InsertStudentData")]
-        public IActionResult InsertStudentData([FromBody] IcampusBoatBackend.Models.Settings.StudentDataUpload bol)
+        public IActionResult InsertStudentData(IFormFile file)
         {
             try
             {
-                DataTable dt = new DataTable();
-                if (bol.StudentData != null && bol.StudentData.Count > 0)
+                if (file == null || file.Length == 0)
+                    return BadRequest("Please select an Excel file.");
+
+                Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+                DataTable excelTable;
+
+                using (var stream = file.OpenReadStream())
                 {
-                    var keys = new HashSet<string>();
-                    foreach (var dict in bol.StudentData)
+                    using (var reader = ExcelDataReader.ExcelReaderFactory.CreateReader(stream))
                     {
-                        foreach (var key in dict.Keys)
+                        var result = reader.AsDataSet(new ExcelDataSetConfiguration()
                         {
-                            keys.Add(key);
-                        }
+                            ConfigureDataTable = (_) => new ExcelDataTableConfiguration()
+                            {
+                                UseHeaderRow = true
+                            }
+                        });
+
+                        excelTable = result.Tables[0];
                     }
-                    foreach (var key in keys)
-                    {
-                        dt.Columns.Add(key, typeof(object));
-                    }
-                    foreach (var dict in bol.StudentData)
-                    {
-                        var row = dt.NewRow();
-                        foreach (var key in keys)
-                        {
-                            row[key] = dict.ContainsKey(key) ? dict[key] ?? DBNull.Value : DBNull.Value;
-                        }
-                        dt.Rows.Add(row);
-                    }
+                }
+
+                // Create DataTable matching SQL User Defined Table Type
+                DataTable dt = new DataTable();
+
+                dt.Columns.Add("RegistrationNo", typeof(string));
+                dt.Columns.Add("STUNAME", typeof(string));
+                dt.Columns.Add("FATHERNAME", typeof(string));
+                dt.Columns.Add("Emailid", typeof(string));
+                dt.Columns.Add("MAadharNo", typeof(string));
+                dt.Columns.Add("StdMobNo", typeof(string));
+                dt.Columns.Add("ParentMbNo", typeof(string));
+                dt.Columns.Add("AadhaarNo", typeof(string));
+                dt.Columns.Add("JnanaBhumiId", typeof(string));
+                dt.Columns.Add("BusFee", typeof(string));
+                dt.Columns.Add("SchAmount", typeof(string));
+                dt.Columns.Add("BloodGrp", typeof(string));
+                dt.Columns.Add("SpotAdmFee", typeof(string));
+                dt.Columns.Add("Modeodcategory", typeof(string));
+                dt.Columns.Add("ApaarID", typeof(string));
+
+                foreach (DataRow row in excelTable.Rows)
+                {
+                    dt.Rows.Add(
+                        row["RegistrationNo"]?.ToString(),
+                        row["STUNAME"]?.ToString(),
+                        row["FATHERNAME"]?.ToString(),
+                        row["Emailid"]?.ToString(),
+                        row["MAadharNo"]?.ToString(),
+                        row["StdMobNo"]?.ToString(),
+                        row["ParentMbNo"]?.ToString(),
+                        row["AadhaarNo"]?.ToString(),
+                        row["JnanaBhumiId"]?.ToString(),
+                        row["BusFee"]?.ToString(),
+                        row["SchAmount"]?.ToString(),
+                        row["BloodGrp"]?.ToString(),
+                        row["SpotAdmFee"]?.ToString(),
+                        row["Modeodcategory"]?.ToString(),
+                        row["ApaarID"]?.ToString()
+                    );
                 }
 
                 using (SqlConnection con = new SqlConnection(IcampusBoatBackend.DAL.SQLConnString))
                 {
-                    using (SqlCommand cmd = new SqlCommand("[SP_Import_studentData]", con) { CommandType = CommandType.StoredProcedure })
+                    using (SqlCommand cmd = new SqlCommand("SP_IMPORT_STUDENTDATA", con))
                     {
-                        var param = cmd.Parameters.Add(new SqlParameter("@EAZYPAYDT", SqlDbType.Structured));
+                        cmd.CommandType = CommandType.StoredProcedure;
+
+                        SqlParameter param = cmd.Parameters.Add("@EAZYPAYDT", SqlDbType.Structured);
+                        param.TypeName = "dbo.StudentDataImport";
                         param.Value = dt;
 
                         con.Open();
                         int rowsAffected = cmd.ExecuteNonQuery();
 
-                        return Ok(new { message = "Success", rowsAffected = rowsAffected });
+                        return Ok(new
+                        {
+                            message = "Excel Uploaded Successfully",
+                            rowsAffected = rowsAffected
+                        });
                     }
                 }
             }
@@ -197,5 +297,8 @@ namespace IcampusBoatBackend.Controllers.Settings
                 return StatusCode(500, ex.Message);
             }
         }
+
+
+
     }
 }
