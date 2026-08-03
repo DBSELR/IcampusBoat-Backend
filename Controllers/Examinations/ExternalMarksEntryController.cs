@@ -21,6 +21,7 @@ namespace IcampusBoatBackend.Controllers.Examinations
         {
             try
             {
+
                 using (SqlConnection con = new SqlConnection(DAL.SQLConnString))
                 {
                     con.Open();
