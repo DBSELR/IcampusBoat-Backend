@@ -23,28 +23,70 @@ namespace IcampusBoatBackend.Controllers.Settings
             return row;
         }
 
+        //[HttpGet]
+        //[Route("DownloadFields")]
+        //public IActionResult DownloadFields()
+        //{
+        //    try
+        //    {
+        //        var result = new List<object>();
+        //        using (SqlConnection con = new SqlConnection(IcampusBoatBackend.DAL.SQLConnString))
+        //        {
+        //            using (SqlCommand cmd = new SqlCommand("sp_DownloadFormatFeillds", con) { CommandType = CommandType.StoredProcedure })
+        //            {
+        //                con.Open();
+        //                using (SqlDataReader reader = cmd.ExecuteReader())
+        //                {
+        //                    while (reader.Read())
+        //                    {
+        //                        result.Add(ReadRow(reader));
+        //                    }
+        //                }
+        //            }
+        //        }
+        //        return Ok(result);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, ex.Message);
+        //    }
+        //}
+
         [HttpGet]
         [Route("DownloadFields")]
         public IActionResult DownloadFields()
         {
             try
             {
-                var result = new List<object>();
+                DataTable dt = new DataTable();
+
                 using (SqlConnection con = new SqlConnection(IcampusBoatBackend.DAL.SQLConnString))
                 {
-                    using (SqlCommand cmd = new SqlCommand("sp_DownloadFormatFeillds", con) { CommandType = CommandType.StoredProcedure })
+                    using (SqlCommand cmd = new SqlCommand("sp_DownloadFormatFeillds", con))
                     {
-                        con.Open();
-                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        cmd.CommandType = CommandType.StoredProcedure;
+
+                        using (SqlDataAdapter da = new SqlDataAdapter(cmd))
                         {
-                            while (reader.Read())
-                            {
-                                result.Add(ReadRow(reader));
-                            }
+                            da.Fill(dt);
                         }
                     }
                 }
-                return Ok(result);
+
+                using (var workbook = new ClosedXML.Excel.XLWorkbook())
+                {
+                    workbook.Worksheets.Add(dt, "STUDENT_DATA");
+
+                    using (var stream = new MemoryStream())
+                    {
+                        workbook.SaveAs(stream);
+
+                        return File(
+                            stream.ToArray(),
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            "STUDENT_DATA.xlsx");
+                    }
+                }
             }
             catch (Exception ex)
             {
