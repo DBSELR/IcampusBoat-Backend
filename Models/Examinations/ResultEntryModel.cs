@@ -3,24 +3,96 @@ using System.Collections.Generic;
 
 namespace IcampusBoatBackend.Models.Examinations
 {
-    public class ResultEntryFilterModel
+    public class ResultEntryLoadRequestModel
     {
-        public string? AcademicYear { get; set; }
+        public string AcademicYear { get; set; } = string.Empty;
         public string? Department { get; set; }
+    }
+
+    public class ResultEntryProgrammesRequestModel
+    {
+        public string AcademicYear { get; set; } = string.Empty;
+    }
+
+    public class ResultEntryLecturersRequestModel
+    {
+        public string? Department { get; set; }
+    }
+
+    public class ResultEntryYearsRequestModel
+    {
+        public string Programme { get; set; } = string.Empty;
+        public string AcademicYear { get; set; } = string.Empty;
+        public string? Department { get; set; }
+    }
+
+    public class ResultEntryBranchesRequestModel
+    {
+        public string Programme { get; set; } = string.Empty;
+        public string AcademicYear { get; set; } = string.Empty;
+        public string? Department { get; set; }
+        public string? UserId { get; set; }
+    }
+
+    public class ResultEntrySectionsRequestModel
+    {
+        public string Programme { get; set; } = string.Empty;
+        public string Branch { get; set; } = string.Empty;
+        public string Year { get; set; } = string.Empty;
+    }
+
+    public class ResultEntrySubjectsRequestModel
+    {
+        public string? Lecturer { get; set; }
+        public string? UserId { get; set; }
         public string? Programme { get; set; }
         public string? Branch { get; set; }
         public string? Year { get; set; }
         public string? Semester { get; set; }
-        public string? Section { get; set; }
         public string? Stream { get; set; } = "1";
+    }
+
+    public class ResultEntryMaxMarksRequestModel
+    {
+        public string? SubjectName { get; set; }
+        public string? SubjectCode { get; set; }
+        public string? Year { get; set; }
+        public string? Semester { get; set; }
+        public string? Branch { get; set; }
+        public string? Section { get; set; }
+        public string? Programme { get; set; }
+        public string? AcademicYear { get; set; }
+        public string? MAXMARKS { get; set; }
+        public string? MINMARKS { get; set; }
+    }
+
+    public class StudentResultsRequestModel
+    {
+        public string? AcademicYear { get; set; }
+        public string? Programme { get; set; }
+        public string? Branch { get; set; }
+        public string? Semester { get; set; }
+        public string? Section { get; set; }
+        public string? Year { get; set; }
         public string? SubjectName { get; set; }
         public string? SubjectCode { get; set; }
         public string? Lecturer { get; set; }
         public string? UserId { get; set; }
-        public string? RegistrationNo { get; set; }
-        public string? MINMARKS { get; set; }
-        public string? MAXMARKS { get; set; }
         public string? SESSIONAL { get; set; }
+        public string? RegistrationNo { get; set; }
+    }
+
+    public class ResultEntryCheckRegNoRequestModel
+    {
+        public string? RegistrationNo { get; set; }
+        public string? Programme { get; set; }
+        public string? Branch { get; set; }
+        public string? Year { get; set; }
+        public string? Semester { get; set; }
+        public string? SubjectName { get; set; }
+        public string? SubjectCode { get; set; }
+        public string? Section { get; set; }
+        public string? Sessional { get; set; }
     }
 
     public class ResultEntrySaveModel
@@ -60,5 +132,36 @@ namespace IcampusBoatBackend.Models.Examinations
         public string? SGPA { get; set; }
         public string? CGPA { get; set; }
         public string? Remarks { get; set; }
+    }
+
+    public class ResultEntryFilterModel
+    {
+        public string? AcademicYear { get; set; }
+        public string? Department { get; set; }
+        public string? Programme { get; set; }
+        public string? Branch { get; set; }
+        public string? Year { get; set; }
+        public string? Semester { get; set; }
+        public string? Section { get; set; }
+        public string? Stream { get; set; } = "1";
+        public string? SubjectName { get; set; }
+        public string? SubjectCode { get; set; }
+        public string? Lecturer { get; set; }
+        public string? UserId { get; set; }
+        public string? RegistrationNo { get; set; }
+        public string? MINMARKS { get; set; }
+        public string? MAXMARKS { get; set; }
+        public string? SESSIONAL { get; set; }
+    }
+
+    public class ResultEntrysubjects
+    {
+        public string? Lecturer { get; set; }
+        public string? Programme { get; set; }
+        public string? Branch { get; set; }
+        public string? Year { get; set; }
+        public string? Semester { get; set; }
+        public string? Stream { get; set; }
+        public string? UserId { get; set; }
     }
 }

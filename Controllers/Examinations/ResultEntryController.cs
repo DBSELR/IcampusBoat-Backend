@@ -9,7 +9,7 @@ using System.Data;
 namespace IcampusBoatBackend.Controllers.Examinations
 {
     /// <summary>
-    /// API Controller for Examinations Result Entry based on exact DAL_ResultEntry.cs queries and procedures.
+    /// API Controller for Examinations Result / External Marks Entry based on exact DAL_ResultEntry.cs queries and procedures.
     /// </summary>
     [AllowAnonymous]
     [ApiController]
@@ -22,16 +22,16 @@ namespace IcampusBoatBackend.Controllers.Examinations
         /// </summary>
         [HttpGet]
         [Route("load")]
-        public IActionResult Load([FromQuery] string academicYear, [FromQuery] string? department = "")
+        public IActionResult Load([FromQuery] ResultEntryLoadRequestModel request)
         {
             try
             {
                 using SqlConnection con = new SqlConnection(DAL.SQLConnString);
                 con.Open();
 
-                string autoSSNo = GetAutoSSNo(con, academicYear);
-                DataTable dtProgrammes = LoadProgrammesData(con, academicYear);
-                DataTable dtFaculty = LoadFacultyData(con, department);
+                string autoSSNo = GetAutoSSNo(con, request.AcademicYear);
+                DataTable dtProgrammes = LoadProgrammesData(con, request.AcademicYear);
+                DataTable dtFaculty = LoadFacultyData(con, request.Department);
 
                 return Ok(new
                 {
@@ -57,14 +57,14 @@ namespace IcampusBoatBackend.Controllers.Examinations
         /// </summary>
         [HttpGet]
         [Route("programmes")]
-        public IActionResult GetProgrammes([FromQuery] string academicYear)
+        public IActionResult GetProgrammes([FromQuery] ResultEntryProgrammesRequestModel request)
         {
             try
             {
                 using SqlConnection con = new SqlConnection(DAL.SQLConnString);
                 con.Open();
 
-                DataTable dt = LoadProgrammesData(con, academicYear);
+                DataTable dt = LoadProgrammesData(con, request.AcademicYear);
                 return Ok(new { success = true, message = "Success", data = DAL.DataTableToList(dt) });
             }
             catch (Exception ex)
@@ -79,14 +79,14 @@ namespace IcampusBoatBackend.Controllers.Examinations
         /// </summary>
         [HttpGet]
         [Route("lecturers")]
-        public IActionResult GetLecturers([FromQuery] string? department = "")
+        public IActionResult GetLecturers([FromQuery] ResultEntryLecturersRequestModel request)
         {
             try
             {
                 using SqlConnection con = new SqlConnection(DAL.SQLConnString);
                 con.Open();
 
-                DataTable dt = LoadFacultyData(con, department);
+                DataTable dt = LoadFacultyData(con, request.Department);
                 return Ok(new { success = true, message = "Success", data = DAL.DataTableToList(dt) });
             }
             catch (Exception ex)
@@ -101,7 +101,7 @@ namespace IcampusBoatBackend.Controllers.Examinations
         /// </summary>
         [HttpGet]
         [Route("years")]
-        public IActionResult GetYears([FromQuery] string programme, [FromQuery] string academicYear, [FromQuery] string? department = "")
+        public IActionResult GetYears([FromQuery] ResultEntryYearsRequestModel request)
         {
             try
             {
@@ -110,23 +110,14 @@ namespace IcampusBoatBackend.Controllers.Examinations
 
                 var spCandidates = new List<(string spName, Dictionary<string, object?> paramsDict)>
                 {
-                    ("SP_ADM_YEARS", new Dictionary<string, object?>
-                    {
-                        { "@Course", programme },
-                        { "@Programme", programme }
-                    }),
+                    
                     ("SP_USERWISE_LoadYR", new Dictionary<string, object?>
                     {
-                        { "@Programme", programme },
-                        { "@Department", department ?? "" },
-                        { "@AcademicYear", academicYear }
-                    }),
-                    ("SP_USERWISE_LoadYR", new Dictionary<string, object?>
-                    {
-                        { "@CourseCode", programme },
-                        { "@DEPT", department ?? "" },
-                        { "@AcademicYear", academicYear }
+                        { "@CourseCode", request.Programme },
+                        { "@DEPT", request.Department ?? "" },
+                        { "@AcademicYear", request.AcademicYear }
                     })
+                   
                 };
 
                 DataTable dt = ExecuteSpWithFallback(con, spCandidates);
@@ -144,7 +135,7 @@ namespace IcampusBoatBackend.Controllers.Examinations
         /// </summary>
         [HttpGet]
         [Route("branches")]
-        public IActionResult GetBranches([FromQuery] string programme, [FromQuery] string academicYear, [FromQuery] string? department = "", [FromQuery] string? userId = "")
+        public IActionResult GetBranches([FromQuery] ResultEntryBranchesRequestModel request)
         {
             try
             {
@@ -155,22 +146,10 @@ namespace IcampusBoatBackend.Controllers.Examinations
                 {
                     ("SP_SubjectMaster_Branch_Load", new Dictionary<string, object?>
                     {
-                        { "@Course", programme },
-                        { "@AcademicYear", academicYear }
+                        { "@Course", request.Programme },
+                        { "@AcademicYear", request.AcademicYear }
                     }),
-                    ("SP_USERWISE_LoadBranch", new Dictionary<string, object?>
-                    {
-                        { "@Programme", programme },
-                        { "@Department", department ?? "" },
-                        { "@AcademicYear", academicYear }
-                    }),
-                    ("SP_USERWISE_LoadBranch", new Dictionary<string, object?>
-                    {
-                        { "@CourseCode", programme },
-                        { "@DEPT", department ?? "" },
-                        { "@AcademicYear", academicYear },
-                        { "@EmpID", userId ?? "" }
-                    })
+                   
                 };
 
                 DataTable dt = ExecuteSpWithFallback(con, spCandidates);
@@ -188,7 +167,7 @@ namespace IcampusBoatBackend.Controllers.Examinations
         /// </summary>
         [HttpGet]
         [Route("sections")]
-        public IActionResult GetSections([FromQuery] string programme, [FromQuery] string branch, [FromQuery] string year)
+        public IActionResult GetSections([FromQuery] ResultEntrySectionsRequestModel request)
         {
             try
             {
@@ -198,9 +177,9 @@ namespace IcampusBoatBackend.Controllers.Examinations
                 string sql = "select distinct Section from tbl_sectionmaster where CourseCode=@Programme and BranchCode=@Branch and StdYear=@Year";
                 using SqlCommand cmd = new SqlCommand(sql, con);
                 cmd.CommandType = CommandType.Text;
-                cmd.Parameters.AddWithValue("@Programme", programme ?? (object)DBNull.Value);
-                cmd.Parameters.AddWithValue("@Branch", branch ?? (object)DBNull.Value);
-                cmd.Parameters.AddWithValue("@Year", year ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Programme", request.Programme ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Branch", request.Branch ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Year", request.Year ?? (object)DBNull.Value);
 
                 DataTable dt = new DataTable();
                 using SqlDataAdapter da = new SqlDataAdapter(cmd);
@@ -212,16 +191,11 @@ namespace IcampusBoatBackend.Controllers.Examinations
                     {
                         ("SP_Get_Section", new Dictionary<string, object?>
                         {
-                            { "@Programme", programme },
-                            { "@Branch", branch },
-                            { "@Year", year }
+                            { "@COURSECODE", request.Programme },
+                            { "@BRANCHCODE", request.Branch },
+                            { "@STDYEAR", request.Year }
                         }),
-                        ("SP_Get_Section", new Dictionary<string, object?>
-                        {
-                            { "@COURSECODE", programme },
-                            { "@BRANCHCODE", branch },
-                            { "@STDYEAR", year }
-                        })
+                       
                     };
                     dt = ExecuteSpWithFallback(con, spCandidates);
                 }
@@ -240,7 +214,7 @@ namespace IcampusBoatBackend.Controllers.Examinations
         /// </summary>
         [HttpGet]
         [Route("subjects")]
-        public IActionResult GetSubjects([FromQuery] ResultEntryFilterModel request)
+        public IActionResult GetSubjects([FromQuery] ResultEntrySubjectsRequestModel request)
         {
             try
             {
@@ -258,26 +232,7 @@ namespace IcampusBoatBackend.Controllers.Examinations
                         { "@Semester", request.Semester },
                         { "@Stream", request.Stream ?? "1" }
                     }),
-                    ("SP_Get_SubName_Faculty", new Dictionary<string, object?>
-                    {
-                        { "@Lecturer", request.Lecturer ?? request.UserId },
-                        { "@Programme", request.Programme },
-                        { "@Branch", request.Branch },
-                        { "@Year", request.Year },
-                        { "@Semester", request.Semester },
-                        { "@Stream", request.Stream ?? "1" }
-                    }),
-                    ("SP_LOAD_SUBJECTS_New", new Dictionary<string, object?>
-                    {
-                        { "@Lecturer", request.Lecturer ?? request.UserId },
-                        { "@Programme", request.Programme },
-                        { "@Branch", request.Branch },
-                        { "@Year", request.Year },
-                        { "@Semester", request.Semester },
-                        { "@Stream", request.Stream ?? "1" },
-                        { "@Section", request.Section },
-                        { "@ACADEMICYEAR", request.AcademicYear }
-                    })
+                                  
                 };
 
                 DataTable dt = ExecuteSpWithFallback(con, spCandidates);
@@ -295,7 +250,7 @@ namespace IcampusBoatBackend.Controllers.Examinations
         /// </summary>
         [HttpGet]
         [Route("max-marks")]
-        public IActionResult GetMaxMarks([FromQuery] ResultEntryFilterModel request)
+        public IActionResult GetMaxMarks([FromQuery] ResultEntryMaxMarksRequestModel request)
         {
             try
             {
@@ -325,16 +280,7 @@ namespace IcampusBoatBackend.Controllers.Examinations
                 {
                     var spCandidates = new List<(string spName, Dictionary<string, object?> paramsDict)>
                     {
-                        ("SP_Get_MaxMarks", new Dictionary<string, object?>
-                        {
-                            { "@AcademicYear", request.AcademicYear },
-                            { "@Programme", request.Programme },
-                            { "@Branch", request.Branch },
-                            { "@Semester", request.Semester },
-                            { "@Section", request.Section },
-                            { "@Year", request.Year },
-                            { "@SubjectName", request.SubjectName ?? request.SubjectCode }
-                        }),
+                      
                         ("SP_lOADMAXMINMARKS", new Dictionary<string, object?>
                         {
                             { "@CourseCode", request.Programme },
@@ -342,7 +288,9 @@ namespace IcampusBoatBackend.Controllers.Examinations
                             { "@Year", request.Year },
                             { "@SEMISTER", request.Semester },
                             { "@SUBJECTCODE", request.SubjectName ?? request.SubjectCode },
-                            { "@AcademicYear", request.AcademicYear }
+                            { "@AcademicYear", request.AcademicYear },
+                            { "@MAXMARKS", request.MAXMARKS },
+                            { "@MINMARKS", request.MINMARKS }
                         })
                     };
                     dt = ExecuteSpWithFallback(con, spCandidates);
@@ -362,7 +310,7 @@ namespace IcampusBoatBackend.Controllers.Examinations
         /// </summary>
         [HttpGet]
         [Route("student-results")]
-        public IActionResult GetStudentResults([FromQuery] ResultEntryFilterModel request)
+        public IActionResult GetStudentResults([FromQuery] StudentResultsRequestModel request)
         {
             try
             {
@@ -376,23 +324,13 @@ namespace IcampusBoatBackend.Controllers.Examinations
                         { "@AcademicYear", request.AcademicYear },
                         { "@Programme", request.Programme },
                         { "@Branch", request.Branch },
-                        { "@Semester", request.Semester },
-                        { "@Section", request.Section },
-                        { "@Year", request.Year },
-                        { "@SubjectName", request.SubjectName ?? request.SubjectCode },
-                        { "@Lecturer", request.Lecturer ?? request.UserId }
-                    }),
-                    ("SP_Result_GradeENtryrLoad", new Dictionary<string, object?>
-                    {
-                        { "@AcademicYear", request.AcademicYear },
-                        { "@Programme", request.Programme },
-                        { "@Branch", request.Branch },
-                        { "@Semester", request.Semester },
+                        { "@SSEMESTER", request.Semester },
                         { "@Section", request.Section },
                         { "@Year", request.Year },
                         { "@SubjectName", request.SubjectName ?? request.SubjectCode },
                         { "@Lecturer", request.Lecturer ?? request.UserId }
                     })
+                  
                 };
 
                 DataTable dt = ExecuteSpWithFallback(con, spCandidates);
@@ -415,7 +353,7 @@ namespace IcampusBoatBackend.Controllers.Examinations
         /// </summary>
         [HttpGet]
         [Route("check-regno")]
-        public IActionResult CheckRegNo([FromQuery] ResultEntryFilterModel request)
+        public IActionResult CheckRegNo([FromQuery] ResultEntryCheckRegNoRequestModel request)
         {
             try
             {
@@ -433,18 +371,9 @@ namespace IcampusBoatBackend.Controllers.Examinations
                         { "@Semester", request.Semester },
                         { "@SubjectName", request.SubjectName ?? request.SubjectCode },
                         { "@Section", request.Section },
-                        { "@Sessional", request.SESSIONAL ?? request.SubjectCode }
+                        { "@Sessional", request.Sessional ?? request.SubjectCode }
                     }),
-                    ("SP_Get_RegNo", new Dictionary<string, object?>
-                    {
-                        { "@RegistrationNo", request.RegistrationNo },
-                        { "@Programme", request.Programme },
-                        { "@Branch", request.Branch },
-                        { "@Year", request.Year },
-                        { "@Semester", request.Semester },
-                        { "@Section", request.Section },
-                        { "@SubjectName", request.SubjectName ?? request.SubjectCode }
-                    })
+                   
                 };
 
                 DataTable dt = ExecuteSpWithFallback(con, spCandidates);
@@ -564,36 +493,15 @@ namespace IcampusBoatBackend.Controllers.Examinations
                     { "@Section", request.Section ?? (object)DBNull.Value },
                     { "@Stream", request.Stream ?? "1" },
                     { "@SubjectName", request.SubjectName ?? request.SubjectCode ?? (object)DBNull.Value },
-                    { "@Sub_Max_MRK", request.Sub_Max_MRK ?? request.SubMaxMrk ?? (object)DBNull.Value },
-                    { "@Max_MRK", request.Max_MRK ?? request.MaxMrk ?? (object)DBNull.Value },
+                    { "@SUBMAXMRK", request.Sub_Max_MRK ?? request.SubMaxMrk ?? (object)DBNull.Value },
+                    { "@MAXMARKS", request.Max_MRK ?? request.MaxMrk ?? (object)DBNull.Value },
                     { "@Marks", request.Marks ?? (object)DBNull.Value },
                     { "@Grade", request.Grade ?? (object)DBNull.Value },
                     { "@CGPA", request.CGPA ?? (object)DBNull.Value },
                     { "@SGPA", request.SGPA ?? (object)DBNull.Value },
                     { "@AcademicYear", request.AcademicYear ?? (object)DBNull.Value },
                     { "@UserId", request.UserId ?? request.Lecturer ?? (object)DBNull.Value }
-                }),
-                ("SP_SaveResultMarksEntry", new Dictionary<string, object?>
-                {
-                    { "@id", request.Id ?? "0" },
-                    { "@RegistrationNo", request.RegistrationNo ?? (object)DBNull.Value },
-                    { "@Date", string.IsNullOrWhiteSpace(request.Date) ? DateTime.Now.ToString("dd-MM-yyyy") : request.Date },
-                    { "@Programme", request.Programme ?? (object)DBNull.Value },
-                    { "@Branch", request.Branch ?? (object)DBNull.Value },
-                    { "@Year", request.Year ?? (object)DBNull.Value },
-                    { "@Semester", request.Semester ?? (object)DBNull.Value },
-                    { "@Section", request.Section ?? (object)DBNull.Value },
-                    { "@Stream", request.Stream ?? "1" },
-                    { "@SubjectName", request.SubjectName ?? request.SubjectCode ?? (object)DBNull.Value },
-                    { "@Sub_Max_MRK", request.Sub_Max_MRK ?? request.SubMaxMrk ?? (object)DBNull.Value },
-                    { "@Max_MRK", request.Max_MRK ?? request.MaxMrk ?? (object)DBNull.Value },
-                    { "@Marks", request.Marks ?? (object)DBNull.Value },
-                    { "@Grade", request.Grade ?? (object)DBNull.Value },
-                    { "@CGPA", request.CGPA ?? (object)DBNull.Value },
-                    { "@SGPA", request.SGPA ?? (object)DBNull.Value },
-                    { "@AcademicYear", request.AcademicYear ?? (object)DBNull.Value },
-                    { "@Lecturer", request.Lecturer ?? request.UserId ?? (object)DBNull.Value }
-                })
+                })            
             };
 
             int rows = ExecuteSpNonQueryWithFallback(con, spCandidates);
@@ -650,7 +558,7 @@ namespace IcampusBoatBackend.Controllers.Examinations
             }
         }
 
-        private static DataTable ExecuteSqlStudentResultsFallback(SqlConnection con, ResultEntryFilterModel request)
+        private static DataTable ExecuteSqlStudentResultsFallback(SqlConnection con, StudentResultsRequestModel request)
         {
             try
             {

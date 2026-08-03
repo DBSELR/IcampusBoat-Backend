@@ -12,11 +12,9 @@ namespace IcampusBoatBackend.Controllers.Examinations
     [AllowAnonymous]
     [ApiController]
     [Route("api/[controller]")]
-    public class AdminMarksEntryController : ControllerBase
+
+    public class ExternalMarksEntryController : ControllerBase
     {
-        /// <summary>
-        /// Initial load API for Admin Marks Entry returning Auto SSNo, Programmes, and Mid Exams.
-        /// </summary>
         [HttpGet]
         [Route("load")]
         public IActionResult Load([FromQuery] string academicYear, [FromQuery] string? department = "", [FromQuery] string? userId = "")
@@ -30,7 +28,7 @@ namespace IcampusBoatBackend.Controllers.Examinations
                     string autoSSNo = "1/" + academicYear;
                     try
                     {
-                        using (SqlCommand cmd = new SqlCommand("SELECT StudentSerialNo FROM tbl_Internal_Marks WHERE ID IN (SELECT MAX(ID) FROM tbl_Internal_Marks WHERE StudentSerialNo LIKE '%" + academicYear + "')", con))
+                        using (SqlCommand cmd = new SqlCommand("select StudentSerialNo from tbl_Internal_Marks where ID in(select max(ID) from tbl_Internal_Marks WHERE StudentSerialNo like '%" + academicYear + "')", con))
                         {
                             cmd.CommandType = CommandType.Text;
                             object result = cmd.ExecuteScalar();
@@ -48,7 +46,6 @@ namespace IcampusBoatBackend.Controllers.Examinations
                     catch { }
 
                     DataTable programmes = LoadProgrammesData(con, academicYear, department, userId);
-                    DataTable midExams = LoadMidExamsData(con, academicYear);
 
                     return Ok(new
                     {
@@ -57,8 +54,7 @@ namespace IcampusBoatBackend.Controllers.Examinations
                         data = new
                         {
                             studentSerialNo = autoSSNo,
-                            programmes = DAL.DataTableToList(programmes),
-                            midExams = DAL.DataTableToList(midExams)
+                            programmes = DAL.DataTableToList(programmes)
                         }
                     });
                 }
@@ -69,9 +65,6 @@ namespace IcampusBoatBackend.Controllers.Examinations
             }
         }
 
-        /// <summary>
-        /// Fetch list of programmes for the selected academic year.
-        /// </summary>
         [HttpGet]
         [Route("programmes")]
         public IActionResult GetProgrammes(string academicYear, string? department = "", string? userId = "")
@@ -90,9 +83,6 @@ namespace IcampusBoatBackend.Controllers.Examinations
             }
         }
 
-        /// <summary>
-        /// Fetch list of studying years for the selected programme.
-        /// </summary>
         [HttpGet]
         [Route("years")]
         public IActionResult GetYears([FromQuery] string Department, string Programme, string AcademicYear)
@@ -120,9 +110,6 @@ namespace IcampusBoatBackend.Controllers.Examinations
             }
         }
 
-        /// <summary>
-        /// Fetch list of branches for selected programme and academic year.
-        /// </summary>
         [HttpGet]
         [Route("branches")]
         public IActionResult GetBranches([FromQuery] string Course, string AcademicYear)
@@ -149,9 +136,6 @@ namespace IcampusBoatBackend.Controllers.Examinations
             }
         }
 
-        /// <summary>
-        /// Fetch sections for selected programme, branch, and studying year.
-        /// </summary>
         [HttpGet]
         [Route("sections")]
         public IActionResult GetSections(string programme, string branch, string year)
@@ -179,87 +163,29 @@ namespace IcampusBoatBackend.Controllers.Examinations
             }
         }
 
-        /// <summary>
-        /// Fetch subjects list based on selected filters.
-        /// </summary>
         [HttpGet]
         [Route("subjects")]
-        public IActionResult GetSubjects([FromQuery] AdminMarksEntryFilterModel request)
+        public IActionResult GetSubjects([FromQuery] ExternalSubjectFilterModel request)
         {
             try
             {
                 using SqlConnection con = new SqlConnection(DAL.SQLConnString);
                 con.Open();
 
-                var spList = new List<(string spName, Dictionary<string, object?> paramsDict)>
-                {
-                    ("SP_LOAD_SUBJECTS_New", new Dictionary<string, object?>
-                    {
-                        { "@Lecturer", request.UserId },
-                        { "@Programme", request.Programme },
-                        { "@Branch", request.Branch },
-                        { "@Year", request.Year },
-                        { "@Semester", request.Semester },
-                        { "@Stream", request.Stream ?? "1" },
-                        { "@Section", request.Section },
-                        { "@AcademicYear", request.AcademicYear }
-                    }),
-                    ("SP_LOADSUBJECTS_MH", new Dictionary<string, object?>
-                    {
-                        { "@COURSECODE", request.Programme },
-                        { "@Sem", request.Semester },
-                        { "@EMPID", request.UserId }
-                    })
-                };
-
-                DataTable dt = ExecuteSpWithFallback(con, spList);
-                return Ok(new { success = true, message = "Success", data = DAL.DataTableToList(dt) });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { success = false, message = ex.Message });
-            }
-        }
-
-        /// <summary>
-        /// Fetch mid exam types for selected subject and parameters.
-        /// </summary>
-        [HttpGet]
-        [Route("mid-types")]
-        public IActionResult GetMidTypes([FromQuery] AdminMarksEntryFilterModel request)
-        {
-            try
-            {
-                using SqlConnection con = new SqlConnection(DAL.SQLConnString);
-                con.Open();
+                using SqlCommand cmd = new SqlCommand("SP_LOAD_ExtenalMarks_SUBJECTS", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@Lecturer", request.UserId ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Programme", request.Programme ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Branch", request.Branch ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Year", request.Year ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Semester", request.Semester ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Stream", request.Stream ?? "1");
+                cmd.Parameters.AddWithValue("@Section", request.Section ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@AcademicYear", request.AcademicYear ?? (object)DBNull.Value);
 
                 DataTable dt = new DataTable();
-
-                if (!string.IsNullOrWhiteSpace(request.SubjectCode) && !string.IsNullOrWhiteSpace(request.Programme))
-                {
-                    var spList = new List<(string spName, Dictionary<string, object?> paramsDict)>
-                    {
-                        ("SP_LOAD_MIDTYPE_SUBJECTMASTER", new Dictionary<string, object?>
-                        {
-                            { "@PROGRAMME", request.Programme },
-                            { "@BRANCH", request.Branch },
-                            { "@YEAR", request.Year },
-                            { "@SEMISTER", request.Semester },
-                            { "@SUBJECT", request.SubjectCode },
-                            { "@SECTION", request.Section },
-                            { "@ACADEMICYEAR", request.AcademicYear }
-                        }),
-                        ("SP_LoadMid_Exams", new Dictionary<string, object?>
-                        {
-                            { "@AcademicYear", request.AcademicYear }
-                        })
-                    };
-                    dt = ExecuteSpWithFallback(con, spList);
-                }
-                else
-                {
-                    dt = LoadMidExamsData(con, request.AcademicYear ?? "");
-                }
+                using SqlDataAdapter da = new SqlDataAdapter(cmd);
+                da.Fill(dt);
 
                 return Ok(new { success = true, message = "Success", data = DAL.DataTableToList(dt) });
             }
@@ -269,12 +195,40 @@ namespace IcampusBoatBackend.Controllers.Examinations
             }
         }
 
-        /// <summary>
-        /// Fetch max and min marks configuration.
-        /// </summary>
+        [HttpGet]
+        [Route("mid-types")]
+        public IActionResult GetMidTypes([FromQuery] ExternalMidTypeFilterModel request)
+        {
+            try
+            {
+                using SqlConnection con = new SqlConnection(DAL.SQLConnString);
+                con.Open();
+
+                using SqlCommand cmd = new SqlCommand("SP_LOAD_MIDTYPE_SUBJECTMASTER_ExtMks", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@Programme", request.Programme ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Branch", request.Branch ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Year", request.Year ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Semester", request.Semester ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@SubjectCode", request.SubjectCode ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Section", request.Section ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@AcademicYear", request.AcademicYear ?? (object)DBNull.Value);
+
+                DataTable dt = new DataTable();
+                using SqlDataAdapter da = new SqlDataAdapter(cmd);
+                da.Fill(dt);
+
+                return Ok(new { success = true, message = "Success", data = DAL.DataTableToList(dt) });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
         [HttpGet]
         [Route("max-min-marks")]
-        public IActionResult GetMaxMinMarks([FromQuery] AdminMarksEntryFilterModel request)
+        public IActionResult GetMaxMinMarks([FromQuery] ExternalMaxMinMarksFilterModel request)
         {
             try
             {
@@ -306,12 +260,9 @@ namespace IcampusBoatBackend.Controllers.Examinations
             }
         }
 
-        /// <summary>
-        /// Check allowed date ranges for internal marks entry.
-        /// </summary>
         [HttpGet]
         [Route("check-internal-dates")]
-        public IActionResult CheckInternalDates([FromQuery] AdminMarksEntryFilterModel request)
+        public IActionResult CheckInternalDates([FromQuery] ExternalInternalDateFilterModel request)
         {
             try
             {
@@ -338,12 +289,9 @@ namespace IcampusBoatBackend.Controllers.Examinations
             }
         }
 
-        /// <summary>
-        /// Fetch student list along with existing marks.
-        /// </summary>
         [HttpGet]
         [Route("student-marks")]
-        public IActionResult GetStudentMarks([FromQuery] AdminMarksEntryFilterModel request)
+        public IActionResult GetStudentMarks([FromQuery] ExternalStudentMarksFilterModel request)
         {
             try
             {
@@ -358,7 +306,7 @@ namespace IcampusBoatBackend.Controllers.Examinations
                 {
                     using SqlCommand cmd = new SqlCommand("SP_ATTMARKSLOAD_SUBJECTWISE", con);
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@SEMISTER", request.Semester ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Semester", request.Semester ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@CLASS", request.Programme ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@GRPID", request.Branch ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@SYEAR", request.Year ?? (object)DBNull.Value);
@@ -372,7 +320,7 @@ namespace IcampusBoatBackend.Controllers.Examinations
                 }
                 else
                 {
-                    using SqlCommand cmd = new SqlCommand("SP_Marks_LIST", con);
+                    using SqlCommand cmd = new SqlCommand("SP_Marks_LIST_ExtMks", con);
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.AddWithValue("@ACADEMICYEAR", request.AcademicYear ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Programme", request.Programme ?? (object)DBNull.Value);
@@ -397,12 +345,41 @@ namespace IcampusBoatBackend.Controllers.Examinations
             }
         }
 
-        /// <summary>
-        /// Save single student mark record.
-        /// </summary>
+        [HttpGet]
+        [Route("validate-regno")]
+        public IActionResult ValidateRegNo([FromQuery] ExternalValidateRegNoFilterModel request)
+        {
+            try
+            {
+                using SqlConnection con = new SqlConnection(DAL.SQLConnString);
+                con.Open();
+
+                using SqlCommand cmd = new SqlCommand("SP_Get_RegisterNo", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@RegistrationNo", request.RegistrationNo ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Programme", request.Programme ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Branch", request.Branch ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Year", request.Year ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Semester", request.Semester ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@SubjectName", request.SubjectCode ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Section", request.Section ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Sessional", request.Sessional ?? (object)DBNull.Value);
+
+                DataTable dt = new DataTable();
+                using SqlDataAdapter da = new SqlDataAdapter(cmd);
+                da.Fill(dt);
+
+                return Ok(new { success = true, message = "Success", data = DAL.DataTableToList(dt) });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
         [HttpPost]
-        [Route("save-All")]
-        public IActionResult SaveAll([FromBody] AdminMarksEntrySaveModel request)
+        [Route("save")]
+        public IActionResult Save([FromBody] ExternalMarksEntrySaveModel request)
         {
             try
             {
@@ -411,12 +388,12 @@ namespace IcampusBoatBackend.Controllers.Examinations
                     return BadRequest(new { success = false, message = "Invalid request payload." });
                 }
 
-                string midType1 = MapMidType1(request.MidType ?? request.MidType1);
+                string midType1 = MapMidType1(request.MidType);
 
                 using SqlConnection con = new SqlConnection(DAL.SQLConnString);
                 con.Open();
 
-                using SqlCommand cmd = new SqlCommand("SP_Internal_MarksEntry_Save", con);
+                using SqlCommand cmd = new SqlCommand("SP_External_MarksEntry_Save", con);
                 cmd.CommandType = CommandType.StoredProcedure;
 
                 cmd.Parameters.AddWithValue("@id", request.Id ?? "0");
@@ -428,7 +405,7 @@ namespace IcampusBoatBackend.Controllers.Examinations
                 cmd.Parameters.AddWithValue("@Semester", request.Semester ?? (object)DBNull.Value);
                 cmd.Parameters.AddWithValue("@Section", request.Section ?? (object)DBNull.Value);
                 cmd.Parameters.AddWithValue("@Stream", request.Stream ?? "1");
-                cmd.Parameters.AddWithValue("@SubjectName", request.SubjectCode ?? request.SubjectName ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@SubjectName", request.SubjectCode ?? (object)DBNull.Value);
                 cmd.Parameters.AddWithValue("@MaxMarks", request.MaxMarks ?? (object)DBNull.Value);
                 cmd.Parameters.AddWithValue("@Marks", request.Marks ?? (object)DBNull.Value);
                 cmd.Parameters.AddWithValue("@Midtype1", midType1 ?? (object)DBNull.Value);
@@ -450,52 +427,86 @@ namespace IcampusBoatBackend.Controllers.Examinations
             }
         }
 
-        /// <summary>
-        /// Save bulk attendance/internal marks for students.
-        /// </summary>
         [HttpPost]
-        [Route("save")]
-        public IActionResult Save([FromBody] AdminMarksEntryAttendanceSaveModel request)
+        [Route("freeze")]
+        public IActionResult Freeze([FromBody] ExternalMarksEntryFreezeModel request)
         {
             try
             {
-                if (request == null || request.Students == null || request.Students.Count == 0)
+                if (request == null)
                 {
-                    return BadRequest(new { success = false, message = "Student list is required." });
+                    return BadRequest(new { success = false, message = "Invalid request payload." });
                 }
+
+                string midType1 = MapMidType1(request.MidType);
 
                 using SqlConnection con = new SqlConnection(DAL.SQLConnString);
                 con.Open();
-                int successCount = 0;
 
-                foreach (var student in request.Students)
+                // 1. Check for unentered (null) marks
+                using (SqlCommand cmdNull = new SqlCommand("SP_GET_External_MARKSNULL", con))
                 {
-                    using SqlCommand cmd = new SqlCommand("SP_ADDATTENDANCEMARKS", con);
-                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmdNull.CommandType = CommandType.StoredProcedure;
+                    cmdNull.Parameters.AddWithValue("@AcademicYear", request.AcademicYear ?? (object)DBNull.Value);
+                    cmdNull.Parameters.AddWithValue("@Programme", request.Programme ?? (object)DBNull.Value);
+                    cmdNull.Parameters.AddWithValue("@Branch", request.Branch ?? (object)DBNull.Value);
+                    cmdNull.Parameters.AddWithValue("@Semester", request.Semester ?? (object)DBNull.Value);
+                    cmdNull.Parameters.AddWithValue("@Section", request.Section ?? (object)DBNull.Value);
+                    cmdNull.Parameters.AddWithValue("@Year", request.Year ?? (object)DBNull.Value);
+                    cmdNull.Parameters.AddWithValue("@SubjectCode", request.SubjectCode ?? (object)DBNull.Value);
+                    cmdNull.Parameters.AddWithValue("@Lecturer", request.Lecturer ?? (object)DBNull.Value);
+                    cmdNull.Parameters.AddWithValue("@Midtype", request.MidType ?? (object)DBNull.Value);
+                    cmdNull.Parameters.AddWithValue("@Midtype1", midType1 ?? (object)DBNull.Value);
 
-                    cmd.Parameters.AddWithValue("@id", student.Id ?? "0");
-                    cmd.Parameters.AddWithValue("@REGNO", student.RegistrationNo ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Programme", request.Programme ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Branch", request.Branch ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Year", request.Year ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Sem", request.Semester ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Section", request.Section ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Date", string.IsNullOrWhiteSpace(request.Date) ? DateTime.Now.ToString("dd-MM-yyyy") : request.Date);
-                    cmd.Parameters.AddWithValue("@SubjectName", request.SubjectCode ?? request.SubjectName ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Marks", student.Marks ?? "0");
-                    cmd.Parameters.AddWithValue("@AcademicYear", request.AcademicYear ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Stream", request.Stream ?? "1");
-                    cmd.Parameters.AddWithValue("@TempCode", student.TLMCode ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@UserId", request.UserId ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@TC", student.TC ?? "0");
-                    cmd.Parameters.AddWithValue("@PC", student.PC ?? "0");
-                    cmd.Parameters.AddWithValue("@Perc", student.Perc ?? "0");
+                    DataTable dtNull = new DataTable();
+                    using SqlDataAdapter da = new SqlDataAdapter(cmdNull);
+                    da.Fill(dtNull);
 
-                    int res = cmd.ExecuteNonQuery();
-                    if (res > 0) successCount++;
+                    if (dtNull.Rows.Count > 0)
+                    {
+                        return BadRequest(new { success = false, message = "Please Give Marks for All Students" });
+                    }
                 }
 
-                return Ok(new { success = true, message = $"{successCount} student attendance marks saved successfully", data = successCount });
+                // 2. Check if marks already frozen
+                using (SqlCommand cmdCheck = new SqlCommand("SP_CHECK_EXTERNAL_FREEZINGMARKS", con))
+                {
+                    cmdCheck.CommandType = CommandType.StoredProcedure;
+                    cmdCheck.Parameters.AddWithValue("@AcademicYear", request.AcademicYear ?? (object)DBNull.Value);
+                    cmdCheck.Parameters.AddWithValue("@Programme", request.Programme ?? (object)DBNull.Value);
+                    cmdCheck.Parameters.AddWithValue("@Branch", request.Branch ?? (object)DBNull.Value);
+                    cmdCheck.Parameters.AddWithValue("@Semester", request.Semester ?? (object)DBNull.Value);
+                    cmdCheck.Parameters.AddWithValue("@Section", request.Section ?? (object)DBNull.Value);
+                    cmdCheck.Parameters.AddWithValue("@Year", request.Year ?? (object)DBNull.Value);
+                    cmdCheck.Parameters.AddWithValue("@SubjectCode", request.SubjectCode ?? (object)DBNull.Value);
+                    cmdCheck.Parameters.AddWithValue("@Lecturer", request.Lecturer ?? (object)DBNull.Value);
+
+                    DataTable dtCheck = new DataTable();
+                    using SqlDataAdapter da = new SqlDataAdapter(cmdCheck);
+                    da.Fill(dtCheck);
+
+                    if (dtCheck.Rows.Count > 0)
+                    {
+                        return BadRequest(new { success = false, message = "Marks Already Freezed" });
+                    }
+                }
+
+                // 3. Freeze marks
+                using (SqlCommand cmdFreeze = new SqlCommand("SP_External_MarksFreeze", con))
+                {
+                    cmdFreeze.CommandType = CommandType.StoredProcedure;
+                    cmdFreeze.Parameters.AddWithValue("@AcademicYear", request.AcademicYear ?? (object)DBNull.Value);
+                    cmdFreeze.Parameters.AddWithValue("@Programme", request.Programme ?? (object)DBNull.Value);
+                    cmdFreeze.Parameters.AddWithValue("@Branch", request.Branch ?? (object)DBNull.Value);
+                    cmdFreeze.Parameters.AddWithValue("@Semester", request.Semester ?? (object)DBNull.Value);
+                    cmdFreeze.Parameters.AddWithValue("@Section", request.Section ?? (object)DBNull.Value);
+                    cmdFreeze.Parameters.AddWithValue("@Year", request.Year ?? (object)DBNull.Value);
+                    cmdFreeze.Parameters.AddWithValue("@SubjectCode", request.SubjectCode ?? (object)DBNull.Value);
+                    cmdFreeze.Parameters.AddWithValue("@Lecturer", request.Lecturer ?? (object)DBNull.Value);
+
+                    int rows = cmdFreeze.ExecuteNonQuery();
+                    return Ok(new { success = true, message = "Marks Freeze Successfully", data = rows });
+                }
             }
             catch (Exception ex)
             {
@@ -503,7 +514,108 @@ namespace IcampusBoatBackend.Controllers.Examinations
             }
         }
 
-        #region Helper Execution & Mapping Methods
+        [HttpGet]
+        [Route("check-frozen")]
+        public IActionResult CheckFrozen([FromQuery] ExternalMarksEntryFreezeModel request)
+        {
+            try
+            {
+                using SqlConnection con = new SqlConnection(DAL.SQLConnString);
+                con.Open();
+
+                using SqlCommand cmd = new SqlCommand("SP_CHECK_EXTERNAL_FREEZINGMARKS", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@AcademicYear", request.AcademicYear ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Programme", request.Programme ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Branch", request.Branch ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Semester", request.Semester ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Section", request.Section ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Year", request.Year ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@SubjectCode", request.SubjectCode ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Lecturer", request.Lecturer ?? (object)DBNull.Value);
+
+                DataTable dt = new DataTable();
+                using SqlDataAdapter da = new SqlDataAdapter(cmd);
+                da.Fill(dt);
+
+                bool isFrozen = dt.Rows.Count > 0;
+                return Ok(new { success = true, message = "Success", data = new { isFrozen } });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        [Route("null-marks-count")]
+        public IActionResult GetNullMarksCount([FromQuery] ExternalMarksEntryFreezeModel request)
+        {
+            try
+            {
+                string midType1 = MapMidType1(request.MidType);
+
+                using SqlConnection con = new SqlConnection(DAL.SQLConnString);
+                con.Open();
+
+                using SqlCommand cmd = new SqlCommand("SP_GET_External_MARKSNULL", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@AcademicYear", request.AcademicYear ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Programme", request.Programme ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Branch", request.Branch ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Semester", request.Semester ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Section", request.Section ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Year", request.Year ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@SubjectCode", request.SubjectCode ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Lecturer", request.Lecturer ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Midtype", request.MidType ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Midtype1", midType1 ?? (object)DBNull.Value);
+
+                DataTable dt = new DataTable();
+                using SqlDataAdapter da = new SqlDataAdapter(cmd);
+                da.Fill(dt);
+
+                return Ok(new { success = true, message = "Success", data = new { count = dt.Rows.Count } });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        [Route("report-data")]
+        public IActionResult GetReportData([FromQuery] ExternalMarksEntryFreezeModel request)
+        {
+            try
+            {
+                using SqlConnection con = new SqlConnection(DAL.SQLConnString);
+                con.Open();
+
+                using SqlCommand cmd = new SqlCommand("SP_Get_External_marks", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@AcademicYear", request.AcademicYear ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Programme", request.Programme ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Branch", request.Branch ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Semester", request.Semester ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Section", request.Section ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Year", request.Year ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@SubjectCode", request.SubjectCode ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Lecturer", request.Lecturer ?? (object)DBNull.Value);
+
+                DataTable dt = new DataTable();
+                using SqlDataAdapter da = new SqlDataAdapter(cmd);
+                da.Fill(dt);
+
+                return Ok(new { success = true, message = "Success", data = DAL.DataTableToList(dt) });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        #region Helpers
 
         private static DataTable LoadProgrammesData(SqlConnection con, string? academicYear, string? department, string? userId)
         {
@@ -514,17 +626,6 @@ namespace IcampusBoatBackend.Controllers.Examinations
                 ("SP_ADM_STDDATA_Programme_LIST", new Dictionary<string, object?> { { "@AcademicYear", academicYear } }),
                 ("SP_SubjectMaster_Programme_Load", new Dictionary<string, object?> { { "@AcademicYear", academicYear } }),
                 ("SP_USERWISE_LoadCourse_NEW", new Dictionary<string, object?> { { "@AcademicYear", academicYear }, { "@Department", department }, { "@UserID", userId } })
-            };
-
-            return ExecuteSpWithFallback(con, spCandidates);
-        }
-
-        private static DataTable LoadMidExamsData(SqlConnection con, string? academicYear)
-        {
-            var spCandidates = new List<(string spName, Dictionary<string, object?> paramsDict)>
-            {
-                ("SP_LoadMid_Exams", new Dictionary<string, object?> { { "@AcademicYear", academicYear } }),
-                ("SP_GET_EXAMTYPE", new Dictionary<string, object?>())
             };
 
             return ExecuteSpWithFallback(con, spCandidates);

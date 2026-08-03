@@ -3,4 +3,45 @@
 GET {{IcampusBoatBackend_HostAddress}}/weatherforecast/
 Accept: application/json
 
-###
+### Get Auto ID
+GET {{IcampusBoatBackend_HostAddress}}/api/Admin_MarksEntry_MH/autoid?AcademicYear=2024-2025
+Accept: application/json
+
+### Get Programmes
+GET {{IcampusBoatBackend_HostAddress}}/api/Admin_MarksEntry_MH/programmes?AcademicYear=2024-2025
+Accept: application/json
+
+### Get Years
+GET {{IcampusBoatBackend_HostAddress}}/api/Admin_MarksEntry_MH/years?AcademicYear=2024-2025&Programme=B.Tech&Department=CSE
+Accept: application/json
+
+### Get Branches
+GET {{IcampusBoatBackend_HostAddress}}/api/Admin_MarksEntry_MH/branches?AcademicYear=2024-2025&Programme=B.Tech&Department=CSE&UserId=1
+Accept: application/json
+
+### Get Sections
+GET {{IcampusBoatBackend_HostAddress}}/api/Admin_MarksEntry_MH/sections?Programme=B.Tech&Branch=CSE&Year=3
+Accept: application/json
+
+### Get Subjects
+GET {{IcampusBoatBackend_HostAddress}}/api/Admin_MarksEntry_MH/subjects?AcademicYear=2024-2025&Programme=B.Tech&Branch=CSE&Year=3&Semester=1&Section=A&UserId=1
+Accept: application/json
+
+### Save Marks Sample
+POST {{IcampusBoatBackend_HostAddress}}/api/Admin_MarksEntry_MH/save-marks
+Content-Type: application/json
+
+{
+  "registrationNo": "2001A0501",
+  "programme": "B.Tech",
+  "branch": "CSE",
+  "year": "3",
+  "semester": "1",
+  "section": "A",
+  "subjectCode": "CS301",
+  "marks": "25",
+  "maxMarks": "30",
+  "academicYear": "2024-2025",
+  "midType": "Mid-1",
+  "userId": "1"
+}

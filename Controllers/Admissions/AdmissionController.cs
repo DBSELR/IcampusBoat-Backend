@@ -526,7 +526,6 @@ namespace IcampusBoatBackend.Controllers.Admissions
 
         [HttpPost]
         [Route("save")]
-        [HttpPost]
         public IActionResult Save([FromBody] StudentAdminRequest request)
         {
             try
@@ -858,141 +857,141 @@ namespace IcampusBoatBackend.Controllers.Admissions
             }
         }
 
-        [HttpGet]
-        [Route("autocomplete/occupation")]
-        public IActionResult AutocompleteOccupation(string prefixText)
-        {
-            try
-            {
-                using SqlConnection con = new SqlConnection(DAL.SQLConnString);
-                con.Open();
+        //[HttpGet]
+        //[Route("autocomplete/occupation")]
+        //public IActionResult AutocompleteOccupation(string prefixText)
+        //{
+        //    try
+        //    {
+        //        using SqlConnection con = new SqlConnection(DAL.SQLConnString);
+        //        con.Open();
 
-                using SqlCommand cmd = new SqlCommand("SP_POCCUPATION_AJAX", con);
-                cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.AddWithValue("@PrefixText", prefixText ?? (object)DBNull.Value);
+        //        using SqlCommand cmd = new SqlCommand("SP_POCCUPATION_AJAX", con);
+        //        cmd.CommandType = CommandType.StoredProcedure;
+        //        cmd.Parameters.AddWithValue("@PrefixText", prefixText ?? (object)DBNull.Value);
 
-                DataTable dt = new DataTable();
-                using SqlDataAdapter da = new SqlDataAdapter(cmd);
-                da.Fill(dt);
+        //        DataTable dt = new DataTable();
+        //        using SqlDataAdapter da = new SqlDataAdapter(cmd);
+        //        da.Fill(dt);
 
-                return Ok(new
-                {
-                    success = true,
-                    message = "Success",
-                    data = DAL.DataTableToList(dt)
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new
-                {
-                    success = false,
-                    message = ex.Message
-                });
-            }
-        }
+        //        return Ok(new
+        //        {
+        //            success = true,
+        //            message = "Success",
+        //            data = DAL.DataTableToList(dt)
+        //        });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, new
+        //        {
+        //            success = false,
+        //            message = ex.Message
+        //        });
+        //    }
+        //}
 
-        [HttpGet]
-        [Route("autocomplete/school-name")]
-        public IActionResult AutocompleteSchoolName(string prefixText)
-        {
-            try
-            {
-                using SqlConnection con = new SqlConnection(DAL.SQLConnString);
-                con.Open();
+        //[HttpGet]
+        //[Route("autocomplete/school-name")]
+        //public IActionResult AutocompleteSchoolName(string prefixText)
+        //{
+        //    try
+        //    {
+        //        using SqlConnection con = new SqlConnection(DAL.SQLConnString);
+        //        con.Open();
 
-                using SqlCommand cmd = new SqlCommand("SP_SCHOOLNAME_AJAX", con);
-                cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.AddWithValue("@PrefixText", prefixText ?? (object)DBNull.Value);
+        //        using SqlCommand cmd = new SqlCommand("SP_SCHOOLNAME_AJAX", con);
+        //        cmd.CommandType = CommandType.StoredProcedure;
+        //        cmd.Parameters.AddWithValue("@PrefixText", prefixText ?? (object)DBNull.Value);
 
-                DataTable dt = new DataTable();
-                using SqlDataAdapter da = new SqlDataAdapter(cmd);
-                da.Fill(dt);
+        //        DataTable dt = new DataTable();
+        //        using SqlDataAdapter da = new SqlDataAdapter(cmd);
+        //        da.Fill(dt);
 
-                return Ok(new
-                {
-                    success = true,
-                    message = "Success",
-                    data = DAL.DataTableToList(dt)
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new
-                {
-                    success = false,
-                    message = ex.Message
-                });
-            }
-        }
+        //        return Ok(new
+        //        {
+        //            success = true,
+        //            message = "Success",
+        //            data = DAL.DataTableToList(dt)
+        //        });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, new
+        //        {
+        //            success = false,
+        //            message = ex.Message
+        //        });
+        //    }
+        //}
 
-        [HttpGet]
-        [Route("autocomplete/inter-college")]
-        public IActionResult AutocompleteInterCollege(string prefixText)
-        {
-            try
-            {
-                using SqlConnection con = new SqlConnection(DAL.SQLConnString);
-                con.Open();
+        //[HttpGet]
+        //[Route("autocomplete/inter-college")]
+        //public IActionResult AutocompleteInterCollege(string prefixText)
+        //{
+        //    try
+        //    {
+        //        using SqlConnection con = new SqlConnection(DAL.SQLConnString);
+        //        con.Open();
 
-                using SqlCommand cmd = new SqlCommand("SP_INTERCLGNAME_AJAX", con);
-                cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.AddWithValue("@PrefixText", prefixText ?? (object)DBNull.Value);
+        //        using SqlCommand cmd = new SqlCommand("SP_INTERCLGNAME_AJAX", con);
+        //        cmd.CommandType = CommandType.StoredProcedure;
+        //        cmd.Parameters.AddWithValue("@PrefixText", prefixText ?? (object)DBNull.Value);
 
-                DataTable dt = new DataTable();
-                using SqlDataAdapter da = new SqlDataAdapter(cmd);
-                da.Fill(dt);
+        //        DataTable dt = new DataTable();
+        //        using SqlDataAdapter da = new SqlDataAdapter(cmd);
+        //        da.Fill(dt);
 
-                return Ok(new
-                {
-                    success = true,
-                    message = "Success",
-                    data = DAL.DataTableToList(dt)
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new
-                {
-                    success = false,
-                    message = ex.Message
-                });
-            }
-        }
+        //        return Ok(new
+        //        {
+        //            success = true,
+        //            message = "Success",
+        //            data = DAL.DataTableToList(dt)
+        //        });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, new
+        //        {
+        //            success = false,
+        //            message = ex.Message
+        //        });
+        //    }
+        //}
 
-        [HttpGet]
-        [Route("autocomplete/student-name")]
-        public IActionResult AutocompleteStudentName(string searchName)
-        {
-            try
-            {
-                using SqlConnection con = new SqlConnection(DAL.SQLConnString);
-                con.Open();
+        //[HttpGet]
+        //[Route("autocomplete/student-name")]
+        //public IActionResult AutocompleteStudentName(string searchName)
+        //{
+        //    try
+        //    {
+        //        using SqlConnection con = new SqlConnection(DAL.SQLConnString);
+        //        con.Open();
 
-                using SqlCommand cmd = new SqlCommand("SP_AJAX_SNAME", con);
-                cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.AddWithValue("@SearchName", searchName ?? (object)DBNull.Value);
+        //        using SqlCommand cmd = new SqlCommand("SP_AJAX_SNAME", con);
+        //        cmd.CommandType = CommandType.StoredProcedure;
+        //        cmd.Parameters.AddWithValue("@SearchName", searchName ?? (object)DBNull.Value);
 
-                DataTable dt = new DataTable();
-                using SqlDataAdapter da = new SqlDataAdapter(cmd);
-                da.Fill(dt);
+        //        DataTable dt = new DataTable();
+        //        using SqlDataAdapter da = new SqlDataAdapter(cmd);
+        //        da.Fill(dt);
 
-                return Ok(new
-                {
-                    success = true,
-                    message = "Success",
-                    data = DAL.DataTableToList(dt)
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new
-                {
-                    success = false,
-                    message = ex.Message
-                });
-            }
-        }
+        //        return Ok(new
+        //        {
+        //            success = true,
+        //            message = "Success",
+        //            data = DAL.DataTableToList(dt)
+        //        });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, new
+        //        {
+        //            success = false,
+        //            message = ex.Message
+        //        });
+        //    }
+        //}
     }
 
     public class StudentAdminRequest

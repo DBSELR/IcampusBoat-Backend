@@ -182,6 +182,8 @@ builder.Services.AddSwaggerGen(c =>
             Array.Empty<string>()
         }
     });
+
+    c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
 });
 
 // ================================

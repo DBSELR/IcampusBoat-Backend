@@ -1,0 +1,24 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/IcampusBoat-Backend.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "run-iisexpress",
+      "type": "shell",
+      "command": "& 'C:\\Program Files\\IIS Express\\iisexpress.exe' /config:\"${workspaceFolder}/.vs/IcampusBoat-Backend/config/applicationhost.config\" /site:\"IcampusBoat-Backend\"",
+      "isBackground": true,
+      "problemMatcher": []
+    }
+  ]
+}

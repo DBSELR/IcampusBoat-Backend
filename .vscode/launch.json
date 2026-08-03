@@ -1,0 +1,35 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "IIS Express (Backend)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "run-iisexpress",
+      "program": "C:\\Program Files\\IIS Express\\iisexpress.exe",
+      "args": [
+        "/config:${workspaceFolder}/.vs/IcampusBoat-Backend/config/applicationhost.config",
+        "/site:IcampusBoat-Backend"
+      ],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": ".NET Core Launch (Kestrel)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/bin/Debug/net8.0/IcampusBoat-Backend.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "serverReadyAction": {
+        "action": "openUrl",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+        "uriFormat": "%s/swagger"
+      },
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  ]
+}

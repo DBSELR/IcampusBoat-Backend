@@ -188,44 +188,6 @@ namespace IcampusBoatBackend.Controllers.Examinations
         }
 
         /// <summary>
-        /// Fetch student marks MH (multiple heads) list.
-        /// </summary>
-        [HttpGet]
-        [Route("student-marks-mh")]
-        public IActionResult GetStudentMarksMH([FromQuery] MarksEntryMHFilterModel request)
-        {
-            try
-            {
-                using SqlConnection con = new SqlConnection(DAL.SQLConnString);
-                con.Open();
-
-                DataTable dt = new DataTable();
-                using (SqlCommand cmd = new SqlCommand("SP_MARKS_ENTRY_MH_LOAD", con))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@AcademicYear", request.AcademicYear ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Programme", request.Programme ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Branch", request.Branch ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Year", request.Year ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Semester", request.Semester ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Section", request.Section ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@SubjectCode", request.SubjectCode ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@MidType", request.MidType ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@UserId", request.UserId ?? (object)DBNull.Value);
-
-                    using SqlDataAdapter da = new SqlDataAdapter(cmd);
-                    da.Fill(dt);
-                }
-
-                return Ok(new { success = true, message = "Success", data = DAL.DataTableToList(dt) });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { success = false, message = ex.Message });
-            }
-        }
-
-        /// <summary>
         /// Bulk save student marks MH (multiple heads).
         /// </summary>
         [HttpPost]
