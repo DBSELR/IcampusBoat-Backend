@@ -77,13 +77,13 @@ namespace IcampusBoatBackend.Controllers.Settings
                         cmd.Parameters.AddWithValue("@FINANCIALYEAR", CM.FinancialYear);
 
                         int rowsAffected = cmd.ExecuteNonQuery();
-                        return Ok(new { message = "Department saved successfully", rowsAffected = rowsAffected });
+                        return Ok(new { message = "Caste saved successfully", rowsAffected = rowsAffected });
                     }
                 }
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Error saving department", error = ex.Message });
+                return StatusCode(500, new { message = "Error saving Caste", error = ex.Message });
             }
         }
 
@@ -137,13 +137,13 @@ namespace IcampusBoatBackend.Controllers.Settings
                         cmd.Parameters.AddWithValue("@FINANCIALYEAR", CM.FinancialYear);
 
                         int rowsAffected = cmd.ExecuteNonQuery();
-                        return Ok(new { message = "Department saved successfully", rowsAffected = rowsAffected });
+                        return Ok(new { message = "Sub Caste saved successfully", rowsAffected = rowsAffected });
                     }
                 }
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Error saving department", error = ex.Message });
+                return StatusCode(500, new { message = "Error saving Sub Caste", error = ex.Message });
             }
         }
 
@@ -195,13 +195,13 @@ namespace IcampusBoatBackend.Controllers.Settings
                         cmd.Parameters.AddWithValue("@FINANCIALYEAR", CM.FinancialYear);
 
                         int rowsAffected = cmd.ExecuteNonQuery();
-                        return Ok(new { message = "Department saved successfully", rowsAffected = rowsAffected });
+                        return Ok(new { message = "SubCaste loaded successfully", rowsAffected = rowsAffected });
                     }
                 }
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Error saving department", error = ex.Message });
+                return StatusCode(500, new { message = "Error loading SubCaste", error = ex.Message });
             }
         }
     }
