@@ -102,7 +102,7 @@ namespace IcampusBoatBackend.Controllers.Settings
                     using (SqlCommand cmd = new SqlCommand("Proc_SaveTeachingLearningMethods", con))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.Parameters.AddWithValue("@TLMID", (object?)bol.Sid ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("@TLMID", (object?)bol.Id ?? DBNull.Value);
                         cmd.Parameters.AddWithValue("@TLMCode", (object?)bol.TLMCode ?? DBNull.Value);
                         cmd.Parameters.AddWithValue("@TLMName", (object?)bol.TLMName ?? DBNull.Value);
                         cmd.Parameters.AddWithValue("@UserId", (object?)bol.UserId ?? DBNull.Value);
