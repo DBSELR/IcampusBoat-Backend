@@ -96,12 +96,12 @@ namespace IcampusBoatBackend.Controllers.Admissions
                             //autoId,
                             //castes = JsonConvert.SerializeObject(castes),
                             castes = DAL.DataTableToList(castes),
-                            libraryGroups = JsonConvert.SerializeObject(libraryGroups),
-                            sections = JsonConvert.SerializeObject(sections),
-                            statuses = JsonConvert.SerializeObject(statuses),
-                            regulations = JsonConvert.SerializeObject(regulations),
-                            programmes = JsonConvert.SerializeObject(programmes),
-                            academicYears = JsonConvert.SerializeObject(academicYears)
+                            libraryGroups = DAL.DataTableToList(libraryGroups),
+                            sections = DAL.DataTableToList(sections),
+                            statuses = DAL.DataTableToList(statuses),
+                            regulations = DAL.DataTableToList(regulations),
+                            programmes = DAL.DataTableToList(programmes),
+                            academicYears = DAL.DataTableToList(academicYears)
                         }
                     });
                 }
