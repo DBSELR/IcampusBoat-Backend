@@ -13,18 +13,116 @@ namespace IcampusBoatBackend.Controllers.Admissions
     [Route("api/[controller]")]
     public class AdmissionController : ControllerBase
     {
- 
 
-    [HttpGet]
-    [Route("load")]
-    public IActionResult Load([FromQuery] string ssno, [FromQuery] string academicYear)
-    {
-        try
+
+        [HttpGet]
+        [Route("load")]
+        public IActionResult Load([FromQuery] string academicYear)
         {
-            using (SqlConnection con = new SqlConnection(DAL.SQLConnString))
+            try
             {
-                con.Open();
+                using (SqlConnection con = new SqlConnection(DAL.SQLConnString))
+                {
+                    con.Open();
 
+                    //// Auto ID
+                    //string autoId = "";
+                    //using (SqlCommand cmd = new SqlCommand("SP_autoid", con))
+                    //{
+                    //    cmd.CommandType = CommandType.StoredProcedure;
+                    //    cmd.Parameters.AddWithValue("@SSNO", ssno ?? (object)DBNull.Value);
+
+                    //    object result = cmd.ExecuteScalar();
+                    //    if (result != null)
+                    //        autoId = result.ToString();
+                    //}
+
+                    // Castes
+                    DataTable castes;
+                    using (SqlCommand cmd = new SqlCommand("SP_ADMIN_STDADMIN_Caste_LIST"))
+                    {
+                        castes = DAL.GetData_FrmSP(cmd, DAL.QueryType.SP);
+                    }
+
+                    // Library Groups
+                    DataTable libraryGroups;
+                    using (SqlCommand cmd = new SqlCommand("SP_ADMIN_LOADLIBRARYMEMBERGROUP"))
+                    {
+                        libraryGroups = DAL.GetData_FrmSP(cmd, DAL.QueryType.SP);
+                    }
+
+                    // Sections
+                    DataTable sections;
+                    using (SqlCommand cmd = new SqlCommand("SP_ADMIN_STDADMIN_Section_LIST"))
+                    {
+                        sections = DAL.GetData_FrmSP(cmd, DAL.QueryType.SP);
+                    }
+
+                    // Statuses
+                    DataTable statuses;
+                    using (SqlCommand cmd = new SqlCommand("SP_ADMIN_STDADMIN_Status_LIST"))
+                    {
+                        statuses = DAL.GetData_FrmSP(cmd, DAL.QueryType.SP);
+                    }
+
+                    // Regulations
+                    DataTable regulations;
+                    using (SqlCommand cmd = new SqlCommand("SP_ADMIN_STDADMIN_LOAD_REGULATION"))
+                    {
+                        regulations = DAL.GetData_FrmSP(cmd, DAL.QueryType.SP);
+                    }
+
+                    // Programmes
+                    DataTable programmes;
+                    using (SqlCommand cmd = new SqlCommand("SP_ADM_STDDATA_Programme_LIST"))
+                    {
+                        cmd.Parameters.AddWithValue("@AcademicYear", academicYear ?? (object)DBNull.Value);
+                        programmes = DAL.GetData_FrmSP(cmd, DAL.QueryType.SP);
+                    }
+
+                    // Academic Years
+                    DataTable academicYears;
+                    using (SqlCommand cmd = new SqlCommand("SP_ADMIN_STDADMIN_AcadamicYear_LIST"))
+                    {
+                        academicYears = DAL.GetData_FrmSP(cmd, DAL.QueryType.SP);
+                    }
+
+                    return Ok(new
+                    {
+                        success = true,
+                        message = "Success",
+                        data = new
+                        {
+                            //autoId,
+                            castes = JsonConvert.SerializeObject(castes),
+                            libraryGroups = JsonConvert.SerializeObject(libraryGroups),
+                            sections = JsonConvert.SerializeObject(sections),
+                            statuses = JsonConvert.SerializeObject(statuses),
+                            regulations = JsonConvert.SerializeObject(regulations),
+                            programmes = JsonConvert.SerializeObject(programmes),
+                            academicYears = JsonConvert.SerializeObject(academicYears)
+                        }
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+
+        [HttpGet]
+        [Route("autoid")]
+        public IActionResult GetAutoid([FromQuery]  string ssno)
+        {
+            try
+            {
+                using SqlConnection con = new SqlConnection(DAL.SQLConnString);
+                con.Open();
                 // Auto ID
                 string autoId = "";
                 using (SqlCommand cmd = new SqlCommand("SP_autoid", con))
@@ -37,86 +135,26 @@ namespace IcampusBoatBackend.Controllers.Admissions
                         autoId = result.ToString();
                 }
 
-                // Castes
-                DataTable castes;
-                using (SqlCommand cmd = new SqlCommand("SP_ADMIN_STDADMIN_Caste_LIST"))
+                return StatusCode(500, new
                 {
-                    castes = DAL.GetData_FrmSP(cmd, DAL.QueryType.SP);
-                }
-
-                // Library Groups
-                DataTable libraryGroups;
-                using (SqlCommand cmd = new SqlCommand("SP_ADMIN_LOADLIBRARYMEMBERGROUP"))
-                {
-                    libraryGroups = DAL.GetData_FrmSP(cmd, DAL.QueryType.SP);
-                }
-
-                // Sections
-                DataTable sections;
-                using (SqlCommand cmd = new SqlCommand("SP_ADMIN_STDADMIN_Section_LIST"))
-                {
-                    sections = DAL.GetData_FrmSP(cmd, DAL.QueryType.SP);
-                }
-
-                // Statuses
-                DataTable statuses;
-                using (SqlCommand cmd = new SqlCommand("SP_ADMIN_STDADMIN_Status_LIST"))
-                {
-                    statuses = DAL.GetData_FrmSP(cmd, DAL.QueryType.SP);
-                }
-
-                // Regulations
-                DataTable regulations;
-                using (SqlCommand cmd = new SqlCommand("SP_ADMIN_STDADMIN_LOAD_REGULATION"))
-                {
-                    regulations = DAL.GetData_FrmSP(cmd, DAL.QueryType.SP);
-                }
-
-                // Programmes
-                DataTable programmes;
-                using (SqlCommand cmd = new SqlCommand("SP_ADM_STDDATA_Programme_LIST"))
-                {
-                    cmd.Parameters.AddWithValue("@AcademicYear", academicYear ?? (object)DBNull.Value);
-                    programmes = DAL.GetData_FrmSP(cmd, DAL.QueryType.SP);
-                }
-
-                // Academic Years
-                DataTable academicYears;
-                using (SqlCommand cmd = new SqlCommand("SP_ADMIN_STDADMIN_AcadamicYear_LIST"))
-                {
-                    academicYears = DAL.GetData_FrmSP(cmd, DAL.QueryType.SP);
-                }
-
-                return Ok(new
-                {
-                    success = true,
-                    message = "Success",
                     data = new
                     {
-                        autoId,
-                        castes = JsonConvert.SerializeObject(castes),
-                        libraryGroups = JsonConvert.SerializeObject(libraryGroups),
-                        sections = JsonConvert.SerializeObject(sections),
-                        statuses = JsonConvert.SerializeObject(statuses),
-                        regulations = JsonConvert.SerializeObject(regulations),
-                        programmes = JsonConvert.SerializeObject(programmes),
-                        academicYears = JsonConvert.SerializeObject(academicYears)
+                        autoId
                     }
+                });
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = ex.Message
                 });
             }
         }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new
-            {
-                success = false,
-                message = ex.Message
-            });
-        }
-    }
 
-
-    [HttpGet]
+        [HttpGet]
         [Route("programmes")]
         public IActionResult GetProgrammes(string academicYear)
         {
@@ -705,16 +743,17 @@ namespace IcampusBoatBackend.Controllers.Admissions
                 using SqlDataAdapter da = new SqlDataAdapter(cmd);
                 da.Fill(dt);
 
-                if (dt.Rows.Count == 0)
-                {
+                //if (dt.Rows.Count == 0)
+                //{
                     return BadRequest(new
                     {
                         success = false,
-                        message = "No Records Found"
+                        message = "No Records Found",
+                        data = DAL.DataTableToList(dt)
                     });
-                }
+                //}
 
-                return Ok(studentSerialNo);
+                //return Ok(studentSerialNo);
             }
             catch (Exception ex)
             {
