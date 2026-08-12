@@ -94,7 +94,8 @@ namespace IcampusBoatBackend.Controllers.Admissions
                         data = new
                         {
                             //autoId,
-                            castes = JsonConvert.SerializeObject(castes),
+                            //castes = JsonConvert.SerializeObject(castes),
+                            castes = DAL.DataTableToList(castes),
                             libraryGroups = JsonConvert.SerializeObject(libraryGroups),
                             sections = JsonConvert.SerializeObject(sections),
                             statuses = JsonConvert.SerializeObject(statuses),
