@@ -116,6 +116,41 @@ namespace IcampusBoatBackend.Controllers.Admissions
         }
 
         [HttpGet]
+        [Route("Griddata")]
+        public IActionResult GetGridData()
+        {
+            try
+            {
+                using SqlConnection con = new SqlConnection(DAL.SQLConnString);
+                con.Open();
+
+                using SqlCommand cmd = new SqlCommand("SP_ADM_STDDATA_LIST", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                DataTable dt = new DataTable();
+                using SqlDataAdapter da = new SqlDataAdapter(cmd);
+                da.Fill(dt);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Success",
+                    data = DAL.DataTableToList(dt)
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+
+
+
+        [HttpGet]
         [Route("autoid")]
         public IActionResult GetAutoid([FromQuery]  string ssno)
         {
