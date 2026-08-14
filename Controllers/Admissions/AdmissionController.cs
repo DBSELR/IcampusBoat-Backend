@@ -150,6 +150,44 @@ namespace IcampusBoatBackend.Controllers.Admissions
         }
 
 
+        [HttpGet]
+        [Route("Sections")]
+        public IActionResult GetSection([FromQuery] StudentAdminRequest request)
+        {
+            try
+            {
+                using SqlConnection con = new SqlConnection(DAL.SQLConnString);
+                con.Open();
+
+                using SqlCommand cmd = new SqlCommand("SP_GET_SECTION", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("@COURSECODE", request.Programme ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@BRANCHCODE", request.Branch ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@STDYEAR", request.SYear ?? (object)DBNull.Value);
+
+                DataTable dt = new DataTable();
+                using SqlDataAdapter da = new SqlDataAdapter(cmd);
+                da.Fill(dt);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Success",
+                    data = DAL.DataTableToList(dt)
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+
+
 
         [HttpGet]
         [Route("autoid")]
