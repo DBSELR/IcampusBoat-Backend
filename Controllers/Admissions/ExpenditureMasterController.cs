@@ -17,12 +17,8 @@ namespace IcampusBoatBackend.Controllers.Admissions
         /// Initial load API returning programme list and the list of existing expenditure heads.
         /// </summary>
         [HttpGet("ExpenditureMasterList")]
-        public IActionResult Load([FromQuery] string academicYear)
+        public IActionResult Load()
         {
-            if (string.IsNullOrWhiteSpace(academicYear))
-            {
-                return BadRequest(new { success = false, message = "Academic year is required." });
-            }
 
             try
             {
