@@ -698,20 +698,47 @@ namespace IcampusBoatBackend.Controllers.Admissions
                 cmd.Parameters.AddWithValue("@RATIONCARDNO", request.RationcardNo ?? (object)DBNull.Value);
                 cmd.Parameters.AddWithValue("@EMAILID", request.Emailid ?? (object)DBNull.Value);
                 cmd.Parameters.AddWithValue("@USERID", request.UserId ?? (object)DBNull.Value);
-                //cmd.Parameters.AddWithValue("@STATUS", request.STATUS ?? (object)DBNull.Value);
+                ////cmd.Parameters.AddWithValue("@STATUS", request.STATUS ?? (object)DBNull.Value);
+                //string status = request.STATUS;
+
+                //if (string.IsNullOrWhiteSpace(status))
+                //{
+                //    if (!string.IsNullOrWhiteSpace(request.StudentSerialNo) &&
+                //        !string.IsNullOrWhiteSpace(request.RegistrationNo))
+                //    {
+                //        status = "UPDATE";
+                //    }
+                //    else
+                //    {
+                //        status = "INSERT";
+                //    }
+                //}
+
+                //cmd.Parameters.AddWithValue("@STATUS", status);
+
                 string status = request.STATUS;
 
                 if (string.IsNullOrWhiteSpace(status))
                 {
-                    if (!string.IsNullOrWhiteSpace(request.StudentSerialNo) &&
-                        !string.IsNullOrWhiteSpace(request.RegistrationNo))
-                    {
+                    using SqlCommand checkCmd = new SqlCommand("SP_GET_SSNO_save", con);
+                    checkCmd.CommandType = CommandType.StoredProcedure;
+
+                    checkCmd.Parameters.AddWithValue(
+                        "@StudentSerialNo",
+                        string.IsNullOrWhiteSpace(request.StudentSerialNo)
+                            ? (object)DBNull.Value
+                            : request.StudentSerialNo
+                    );
+
+                    using SqlDataAdapter da = new SqlDataAdapter(checkCmd);
+
+                    DataTable dt = new DataTable();
+                    da.Fill(dt);
+
+                    if (dt.Rows.Count > 0)
                         status = "UPDATE";
-                    }
                     else
-                    {
                         status = "INSERT";
-                    }
                 }
 
                 cmd.Parameters.AddWithValue("@STATUS", status);
