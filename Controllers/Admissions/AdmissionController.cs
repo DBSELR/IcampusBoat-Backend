@@ -724,7 +724,7 @@ namespace IcampusBoatBackend.Controllers.Admissions
                     checkCmd.CommandType = CommandType.StoredProcedure;
 
                     checkCmd.Parameters.AddWithValue(
-                        "@StudentSerialNo",
+                        "@SSno",
                         string.IsNullOrWhiteSpace(request.StudentSerialNo)
                             ? (object)DBNull.Value
                             : request.StudentSerialNo

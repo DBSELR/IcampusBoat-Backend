@@ -16,7 +16,7 @@ namespace IcampusBoatBackend.Controllers.Admissions
         /// <summary>
         /// Initial load API returning programme list and the list of existing expenditure heads.
         /// </summary>
-        [HttpGet("load")]
+        [HttpGet("ExpenditureMasterList")]
         public IActionResult Load([FromQuery] string academicYear)
         {
             if (string.IsNullOrWhiteSpace(academicYear))
@@ -29,18 +29,6 @@ namespace IcampusBoatBackend.Controllers.Admissions
                 using (SqlConnection con = new SqlConnection(DAL.SQLConnString))
                 {
                     con.Open();
-
-                    // 1. Get Program List
-                    DataTable dtPrograms = new DataTable();
-                    using (SqlCommand cmd = new SqlCommand("SP_ADM_STDDATA_Programme_LIST", con))
-                    {
-                        cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.Parameters.AddWithValue("@AcademicYear", academicYear);
-                        using (SqlDataAdapter da = new SqlDataAdapter(cmd))
-                        {
-                            da.Fill(dtPrograms);
-                        }
-                    }
 
                     // 2. Load Expenditure Heads Grid Data
                     DataTable dtList = new DataTable();
@@ -57,11 +45,10 @@ namespace IcampusBoatBackend.Controllers.Admissions
                     {
                         success = true,
                         message = "Success",
-                        data = new
-                        {
-                            courses = DAL.DataTableToList(dtPrograms),
-                            expHeadsList = DAL.DataTableToList(dtList)
-                        }
+                        data = DAL.DataTableToList(dtList)
+                        //{
+                        //    expHeadsList = 
+                        //}
                     });
                 }
             }
