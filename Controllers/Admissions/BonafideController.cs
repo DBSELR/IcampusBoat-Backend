@@ -22,37 +22,44 @@ namespace IcampusBoatBackend.Controllers
                 using (SqlConnection con = new SqlConnection(DAL.SQLConnString))
                 {
                     con.Open();
-                    // Get next auto number
+
+                    // Get next certificate number
                     string scNo = "";
-                    using (SqlCommand cmd = new SqlCommand("EXEC SP_Certificate_AUTOSCNO_LIST @CertificateNO", con))
+
+                    using (SqlCommand cmd = new SqlCommand(
+                        "SP_Certificate_AUTOSCNO_LIST", con))
                     {
-                        cmd.Parameters.AddWithValue("@CertificateNO", certificateNo ?? (object)DBNull.Value);
+                        cmd.CommandType = CommandType.StoredProcedure;
+
+                        cmd.Parameters.AddWithValue(
+                            "@CertificateNO",
+                            certificateNo ?? (object)DBNull.Value
+                        );
+
                         object result = cmd.ExecuteScalar();
-                        if (result != null) scNo = result.ToString();
+
+                        if (result != null)
+                            scNo = result.ToString();
                     }
 
-                    // Get list of certificates
-                    List<object> certificates = new List<object>();
+                    // Get all certificate fields
+                    List<Dictionary<string, object>> certificates;
 
                     using (SqlCommand cmd = new SqlCommand("Bonafied_List", con))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
 
-                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        using (SqlDataAdapter da = new SqlDataAdapter(cmd))
                         {
-                            while (reader.Read())
-                            {
-                                certificates.Add(new
-                                {
-                                    Id = reader["Id"],
-                                    CertificateNo = reader["CertificateNo"],
-                                    StudentName = reader["StudentName"],
-                                    RegistrationNo = reader["SSNO"],
-                                    Course = reader["COURSECODE"]
-                                });
-                            }
+                            DataTable dt = new DataTable();
+
+                            da.Fill(dt);
+
+                            // Use your existing DAL function
+                            certificates = DAL.DataTableToList(dt);
                         }
                     }
+
                     return Ok(new
                     {
                         success = true,
@@ -61,7 +68,7 @@ namespace IcampusBoatBackend.Controllers
                         {
                             nextCertificateNo = scNo,
                             certificates = certificates,
-                            defaultDate = DateTime.UtcNow.AddHours(5).AddMinutes(30).ToString("dd-MM-yyyy")
+                            defaultDate = DateTime.Now.ToString("dd-MM-yyyy")
                         }
                     });
                 }

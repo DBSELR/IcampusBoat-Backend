@@ -161,12 +161,12 @@ namespace IcampusBoatBackend.Controllers.Admissions
         /// Fetch students list matching current section details for potential section change.
         /// </summary>
         [HttpGet("students")]
-        public IActionResult GetStudents([FromQuery] string programme, [FromQuery] string branch, [FromQuery] string syear, [FromQuery] string semester, [FromQuery] string section, [FromQuery] string academicYear)
+        public IActionResult GetStudents([FromQuery] string? programme, [FromQuery] string? branch, [FromQuery] string? syear, [FromQuery] string? semester, [FromQuery] string? section, [FromQuery] string academicYear)
         {
-            if (string.IsNullOrWhiteSpace(programme) || string.IsNullOrWhiteSpace(branch) || string.IsNullOrWhiteSpace(syear) || string.IsNullOrWhiteSpace(semester) || string.IsNullOrWhiteSpace(section) || string.IsNullOrWhiteSpace(academicYear))
-            {
-                return BadRequest(new { success = false, message = "All query parameters (programme, branch, syear, semester, section, academicYear) are required." });
-            }
+            //if (string.IsNullOrWhiteSpace(programme) || string.IsNullOrWhiteSpace(branch) || string.IsNullOrWhiteSpace(syear) || string.IsNullOrWhiteSpace(semester) || string.IsNullOrWhiteSpace(section) || string.IsNullOrWhiteSpace(academicYear))
+            //{
+            //    return BadRequest(new { success = false, message = "All query parameters (programme, branch, syear, semester, section, academicYear) are required." });
+            //}
 
             try
             {
@@ -177,11 +177,11 @@ namespace IcampusBoatBackend.Controllers.Admissions
                     using (SqlCommand cmd = new SqlCommand("SP_SectionChange", con))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.Parameters.AddWithValue("@Programme", programme);
-                        cmd.Parameters.AddWithValue("@Branch", branch);
-                        cmd.Parameters.AddWithValue("@Year", syear);
-                        cmd.Parameters.AddWithValue("@Sem", semester);
-                        cmd.Parameters.AddWithValue("@SECTION", section);
+                        cmd.Parameters.AddWithValue("@Programme", programme ?? "");
+                        cmd.Parameters.AddWithValue("@Branch", branch ?? "");
+                        cmd.Parameters.AddWithValue("@Year", syear ?? "");
+                        cmd.Parameters.AddWithValue("@Sem", semester ?? "");
+                        cmd.Parameters.AddWithValue("@SECTION", section ?? "");
                         cmd.Parameters.AddWithValue("@AcademicYear", academicYear);
 
                         using (SqlDataAdapter da = new SqlDataAdapter(cmd))
