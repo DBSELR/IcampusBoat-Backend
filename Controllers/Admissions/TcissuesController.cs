@@ -499,7 +499,7 @@ namespace IcampusBoatBackend.Controllers.Admissions
                     using (SqlCommand cmd = new SqlCommand("Sp_Adm_Print_Tc", con))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.Parameters.AddWithValue("@Tid", tid ?? "");
+                        cmd.Parameters.AddWithValue("@id", tid ?? "");
                         cmd.Parameters.AddWithValue("@SSNO", ssno ?? "");
 
                         using (SqlDataAdapter da = new SqlDataAdapter(cmd))
