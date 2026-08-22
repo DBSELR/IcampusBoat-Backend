@@ -176,7 +176,7 @@ namespace IcampusBoatBackend.Controllers.Admissions
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@REGNO", regNo);
-                        cmd.Parameters.AddWithValue("@AcademicYear", academicYear);
+                        cmd.Parameters.AddWithValue("@ACYR", academicYear);
 
                         using (SqlDataAdapter da = new SqlDataAdapter(cmd))
                         {
