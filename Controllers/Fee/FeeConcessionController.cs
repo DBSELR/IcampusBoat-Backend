@@ -147,7 +147,7 @@ namespace IcampusBoatBackend.Controllers.Fee
                         cmd.Parameters.AddWithValue("@FEENAME", (object?)bol.FeeName ?? DBNull.Value);
                         cmd.Parameters.AddWithValue("@FEETYPE", (object?)bol.FeeType ?? DBNull.Value);
                         cmd.Parameters.AddWithValue("@FEE", (object?)bol.Fee ?? DBNull.Value);
-                        cmd.Parameters.AddWithValue("@FEE", (object?)bol.PayAmount ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("@CONCESSION", (object?)bol.PayAmount ?? DBNull.Value);
                         cmd.Parameters.AddWithValue("@CID", (object?)bol.CID ?? DBNull.Value);
                         cmd.Parameters.AddWithValue("@CATEGORYTYPE", (object?)bol.Ctype ?? DBNull.Value);
 
