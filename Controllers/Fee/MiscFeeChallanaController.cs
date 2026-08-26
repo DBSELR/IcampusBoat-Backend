@@ -266,7 +266,7 @@ namespace IcampusBoatBackend.Controllers.Fee
                 using (SqlConnection con = new SqlConnection(IcampusBoatBackend.DAL.SQLConnString))
                 {
                     con.Open();
-                    string query = "SELECT MAX(DBO.VAL(RECPTNO))+1 AS RECPTNO FROM TBL_MISC_FEECHALLAN_DETAILS WHERE ACADEMICYEAR = @AcademicYear";
+                    string query = "SELECT isnull(MAX(DBO.VAL(RECPTNO)),0)+1 AS RECPTNO FROM TBL_MISC_FEECHALLAN_DETAILS WHERE ACADEMICYEAR = @AcademicYear";
                     using (SqlCommand cmd = new SqlCommand(query, con))
                     {
                         cmd.CommandType = CommandType.Text;
