@@ -105,7 +105,7 @@ namespace IcampusBoatBackend.Controllers.Accounts
         [AllowAnonymous]
         [HttpGet]
         [Route("GetPHData")]
-        public IActionResult GetPHData(string? academicYear, string? phName)
+        public IActionResult GetPHData(string? phName)
         {
             try
             {

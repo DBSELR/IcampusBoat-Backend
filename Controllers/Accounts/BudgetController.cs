@@ -112,7 +112,7 @@ namespace IcampusBoatBackend.Controllers.Accounts
                     using (SqlCommand cmd = new SqlCommand("SP_BUDGET_SAVE", con))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.Parameters.AddWithValue("@ID", string.IsNullOrEmpty(model.ID) ? "0" : model.ID);
+                        cmd.Parameters.AddWithValue("@ID", string.IsNullOrEmpty(model.ID) ? "" : model.ID);
                         cmd.Parameters.AddWithValue("@FYEAR", (object?)model.FYEAR ?? DBNull.Value);
                         cmd.Parameters.AddWithValue("@SMODE", (object?)model.SMODE ?? DBNull.Value);
                         cmd.Parameters.AddWithValue("@BHSNAME", (object?)model.BHSNAME ?? DBNull.Value);
