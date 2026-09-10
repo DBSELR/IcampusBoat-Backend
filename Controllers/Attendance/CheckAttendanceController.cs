@@ -271,8 +271,6 @@ namespace IcampusBoatBackend.Controllers.Attendance
                     using (SqlCommand cmd = new SqlCommand(spName, con))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.Parameters.AddWithValue("@Lecturer", request.Lecturer ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@EDATE", request.Date ?? (object)DBNull.Value);
 
                         if (spName == "Sp_Attendance_Practical_Students_Load")
                         {

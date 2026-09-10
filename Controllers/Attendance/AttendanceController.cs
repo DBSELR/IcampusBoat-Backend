@@ -298,11 +298,9 @@ namespace IcampusBoatBackend.Controllers.Attendance
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@Lecturer", request.Lecturer ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@EDATE", request.Date ?? (object)DBNull.Value);
 
                         if (spName == "Sp_Attendance_Practical_Students_Load")
                         {
-                            cmd.Parameters.AddWithValue("@Lecturer", request.Lecturer ?? (object)DBNull.Value);
                             cmd.Parameters.AddWithValue("@Period", request.Period ?? (object)DBNull.Value);
                             cmd.Parameters.AddWithValue("@ADATE", request.Date ?? (object)DBNull.Value);
                             cmd.Parameters.AddWithValue("@AcadamicYear", request.AcademicYear ?? (object)DBNull.Value);
@@ -311,7 +309,6 @@ namespace IcampusBoatBackend.Controllers.Attendance
                         }
                         else if (spName == "Sp_Attendance_Students_Load")
                         {
-                            cmd.Parameters.AddWithValue("@LECTURER", request.Lecturer ?? (object)DBNull.Value);
                             cmd.Parameters.AddWithValue("@PERIOD", request.Period ?? (object)DBNull.Value);
                             cmd.Parameters.AddWithValue("@ADATE", request.Date ?? (object)DBNull.Value);
                             cmd.Parameters.AddWithValue("@ACADAMICYEAR", request.AcademicYear ?? (object)DBNull.Value);

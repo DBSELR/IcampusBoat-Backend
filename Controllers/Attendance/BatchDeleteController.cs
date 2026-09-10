@@ -199,10 +199,10 @@ namespace IcampusBoatBackend.Controllers.Attendance
                         cmd.Parameters.AddWithValue("@Course", request.Programme ?? (object)DBNull.Value);
                         cmd.Parameters.AddWithValue("@Branch", request.Branch ?? (object)DBNull.Value);
                         cmd.Parameters.AddWithValue("@SYear", request.SYear ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@SEMESTER", request.Semester ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@SECTION", request.Section ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@DAY", request.Day ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@PERIOD", request.Period ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Semister", request.Semester ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Section", request.Section ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Day", request.Day ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Period", request.Period ?? (object)DBNull.Value);
                         using (SqlDataAdapter da = new SqlDataAdapter(cmd))
                         {
                             da.Fill(dt);
