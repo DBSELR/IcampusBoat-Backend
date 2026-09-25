@@ -387,7 +387,7 @@ namespace IcampusBoatBackend.Controllers.Attendance
                         cmd.Parameters.AddWithValue("@BRANCH", request.Branch ?? (object)DBNull.Value);
                         cmd.Parameters.AddWithValue("@Stream", request.Stream ?? (object)DBNull.Value);
                         cmd.Parameters.AddWithValue("@SEC", request.Section ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@ShiftNo", request.ShiftNo ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@SHITF", request.ShiftNo ?? (object)DBNull.Value);
                         cmd.Parameters.AddWithValue("@PROGRAMME", request.Programme ?? (object)DBNull.Value);
                         using (SqlDataAdapter da = new SqlDataAdapter(cmd))
                         {

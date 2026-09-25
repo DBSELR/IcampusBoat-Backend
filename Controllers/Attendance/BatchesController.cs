@@ -357,19 +357,19 @@ namespace IcampusBoatBackend.Controllers.Attendance
                                 using (SqlCommand saveCmd = new SqlCommand("SP_BATCH_STUDENTS_SAVE", con))
                                 {
                                     saveCmd.CommandType = CommandType.StoredProcedure;
-                                    saveCmd.Parameters.AddWithValue("@LECTURER", request.Lecturer ?? (object)DBNull.Value);
+                                    saveCmd.Parameters.AddWithValue("@FacultyID", request.Lecturer ?? (object)DBNull.Value);
                                     saveCmd.Parameters.AddWithValue("@Shift", request.Shift ?? (object)DBNull.Value);
-                                    saveCmd.Parameters.AddWithValue("@Programme", request.Programme ?? (object)DBNull.Value);
-                                    saveCmd.Parameters.AddWithValue("@Branch", request.Branch ?? (object)DBNull.Value);
+                                    saveCmd.Parameters.AddWithValue("@CourseCode", request.Programme ?? (object)DBNull.Value);
+                                    saveCmd.Parameters.AddWithValue("@BranchCode", request.Branch ?? (object)DBNull.Value);
                                     saveCmd.Parameters.AddWithValue("@SYear", request.SYear ?? (object)DBNull.Value);
-                                    saveCmd.Parameters.AddWithValue("@SEMESTER", request.Semester ?? (object)DBNull.Value);
-                                    saveCmd.Parameters.AddWithValue("@SECTION", request.Section ?? (object)DBNull.Value);
-                                    saveCmd.Parameters.AddWithValue("@DAY", request.Day ?? (object)DBNull.Value);
-                                    saveCmd.Parameters.AddWithValue("@SUBJECTS", request.Subjects ?? (object)DBNull.Value);
+                                    saveCmd.Parameters.AddWithValue("@Semister", request.Semester ?? (object)DBNull.Value);
+                                    saveCmd.Parameters.AddWithValue("@Section", request.Section ?? (object)DBNull.Value);
+                                    saveCmd.Parameters.AddWithValue("@Day", request.Day ?? (object)DBNull.Value);
+                                    saveCmd.Parameters.AddWithValue("@SUB_CODE", request.Subjects ?? (object)DBNull.Value);
                                     saveCmd.Parameters.AddWithValue("@Period_Range", request.PeriodRange ?? (object)DBNull.Value);
-                                    saveCmd.Parameters.AddWithValue("@RegNo", st.RegNo ?? (object)DBNull.Value);
+                                    saveCmd.Parameters.AddWithValue("@RegistrationNo", st.RegNo ?? (object)DBNull.Value);
                                     saveCmd.Parameters.AddWithValue("@SName", st.SName ?? (object)DBNull.Value);
-                                    saveCmd.Parameters.AddWithValue("@AcademicYear", request.AcademicYear ?? (object)DBNull.Value);
+                                    saveCmd.Parameters.AddWithValue("@AcadamicYear", request.AcademicYear ?? (object)DBNull.Value);
                                     saveCmd.Parameters.AddWithValue("@IsActive", "Y");
 
                                     savedCount += saveCmd.ExecuteNonQuery();

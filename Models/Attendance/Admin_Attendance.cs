@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace IcampusBoatBackend.Models.Attendance
 {
@@ -53,6 +54,14 @@ namespace IcampusBoatBackend.Models.Attendance
         public string? ErNo { get; set; }
     }
 
+    public class AdminStudentAttendanceItem
+    {
+        public int SNo { get; set; }
+        public string? RegNo { get; set; }
+        public string? Status { get; set; } // "P" or "A"
+        public string? Remarks { get; set; }
+    }
+
     public class SaveAdminAttendanceSubWiseRequest
     {
         public string? Lecturer { get; set; }
@@ -73,6 +82,7 @@ namespace IcampusBoatBackend.Models.Attendance
         public string? Query { get; set; }
         public string? PeriodRange { get; set; }
         public string? TLM { get; set; }
+        public List<AdminStudentAttendanceItem>? Students { get; set; }
     }
 
     public class SaveAdminPermissionsRequest
@@ -88,4 +98,3 @@ namespace IcampusBoatBackend.Models.Attendance
         public string? AcdYr { get; set; }
     }
 }
-
