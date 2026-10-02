@@ -11,8 +11,35 @@ namespace IcampusBoatBackend.Controllers.Attendance
     [AllowAnonymous]
     [ApiController]
     [Route("api/[controller]")]
-    public class AttendanceController : ControllerBase
+    public class Edit_AttendanceController : ControllerBase
     {
+        [AllowAnonymous]
+        [HttpGet("current-acyr")]
+        public IActionResult GetCurrentAcyr()
+        {
+            try
+            {
+                using (SqlConnection con = new SqlConnection(DAL.SQLConnString))
+                {
+                    con.Open();
+                    DataTable dt = new DataTable();
+                    string query = "select AcademicYear from tbl_AcademicYear where ISACTIVE = 'y'";
+                    using (SqlCommand cmd = new SqlCommand(query, con))
+                    {
+                        using (SqlDataAdapter da = new SqlDataAdapter(cmd))
+                        {
+                            da.Fill(dt);
+                        }
+                    }
+                    return Ok(new { success = true, data = DAL.DataTableToList(dt) });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
         [AllowAnonymous]
         [HttpGet("programmes")]
         public IActionResult GetProgrammes([FromQuery] string? acdYr)
@@ -100,41 +127,6 @@ namespace IcampusBoatBackend.Controllers.Attendance
         }
 
         [AllowAnonymous]
-        [HttpPost("sections")]
-        public IActionResult GetSections([FromBody] SectionSearchRequest request)
-        {
-            if (request == null)
-            {
-                return BadRequest(new { success = false, message = "Section search request is required." });
-            }
-
-            try
-            {
-                using (SqlConnection con = new SqlConnection(DAL.SQLConnString))
-                {
-                    con.Open();
-                    DataTable dt = new DataTable();
-                    using (SqlCommand cmd = new SqlCommand("SP_GET_ATTSEC", con))
-                    {
-                        cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.Parameters.AddWithValue("@PROGRAMME", request.Programme ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@BranchCode", request.Branch ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@StdYear", request.SYear ?? (object)DBNull.Value);
-                        using (SqlDataAdapter da = new SqlDataAdapter(cmd))
-                        {
-                            da.Fill(dt);
-                        }
-                    }
-                    return Ok(new { success = true, data = DAL.DataTableToList(dt) });
-                }
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { success = false, message = ex.Message });
-            }
-        }
-
-        [AllowAnonymous]
         [HttpGet("tlm")]
         public IActionResult GetTLM([FromQuery] string? academicYear)
         {
@@ -144,10 +136,10 @@ namespace IcampusBoatBackend.Controllers.Attendance
                 {
                     con.Open();
                     DataTable dt = new DataTable();
-                    using (SqlCommand cmd = new SqlCommand("SP_GET_TLM", con))
+                    string query = "select TLMCode+'-'+TLMName as TLM from tbl_TeachingLearningMethods where AcYr=@AcademicYear";
+                    using (SqlCommand cmd = new SqlCommand(query, con))
                     {
-                        cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.Parameters.AddWithValue("@ACYR", academicYear ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@AcademicYear", academicYear ?? (object)DBNull.Value);
                         using (SqlDataAdapter da = new SqlDataAdapter(cmd))
                         {
                             da.Fill(dt);
@@ -163,20 +155,28 @@ namespace IcampusBoatBackend.Controllers.Attendance
         }
 
         [AllowAnonymous]
-        [HttpGet("check-holidays")]
-        public IActionResult CheckHolidays([FromQuery] string? acdYr, [FromQuery] string? date)
+        [HttpPost("sections")]
+        public IActionResult GetSections([FromBody] EditSectionSearchRequest request)
         {
+            if (request == null)
+            {
+                return BadRequest(new { success = false, message = "Section request is required." });
+            }
+
             try
             {
                 using (SqlConnection con = new SqlConnection(DAL.SQLConnString))
                 {
                     con.Open();
                     DataTable dt = new DataTable();
-                    using (SqlCommand cmd = new SqlCommand("SP_GET_HOLIDAY", con))
+                    string query = @"select distinct Section from tbl_sectionmaster 
+                                     where CourseCode=@Programme and BranchCode=@Branch and StdYear=@SYear and AcademicYear=@AcdYr";
+                    using (SqlCommand cmd = new SqlCommand(query, con))
                     {
-                        cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.Parameters.AddWithValue("@AcademicYear", acdYr ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@holidaydate", date ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Programme", request.Programme ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Branch", request.Branch ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@SYear", request.SYear ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@AcdYr", request.AcdYr ?? (object)DBNull.Value);
                         using (SqlDataAdapter da = new SqlDataAdapter(cmd))
                         {
                             da.Fill(dt);
@@ -193,7 +193,7 @@ namespace IcampusBoatBackend.Controllers.Attendance
 
         [AllowAnonymous]
         [HttpPost("periods")]
-        public IActionResult GetPeriods([FromBody] PeriodLoadRequest request)
+        public IActionResult GetEditPeriods([FromBody] EditPeriodLoadRequest request)
         {
             if (request == null)
             {
@@ -206,18 +206,18 @@ namespace IcampusBoatBackend.Controllers.Attendance
                 {
                     con.Open();
                     DataTable dt = new DataTable();
-                    using (SqlCommand cmd = new SqlCommand("Proc_Attendance_Period_Load", con))
+                    string query = @"select distinct Period_Range FRM_TO_PERIODS from tbl_attendence 
+                                     where adate=@DATE and class=@Programme and grpid=@Branch and Syear=@SYear and section=@Section AND Semister=@Semester and AcadamicYear=@AcdYr";
+                    using (SqlCommand cmd = new SqlCommand(query, con))
                     {
-                        cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.Parameters.AddWithValue("@AcademicYear", request.AcdYr ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@Lecturer", request.Lecturer ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@Shift", request.Shift ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@DATE", request.Date ?? (object)DBNull.Value);
                         cmd.Parameters.AddWithValue("@Programme", request.Programme ?? (object)DBNull.Value);
                         cmd.Parameters.AddWithValue("@Branch", request.Branch ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@Year", request.SYear ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@Sem", request.Semester ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@SYear", request.SYear ?? (object)DBNull.Value);
                         cmd.Parameters.AddWithValue("@Section", request.Section ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@ADATE", request.Date ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Semester", request.Semester ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@AcdYr", request.AcdYr ?? (object)DBNull.Value);
+
                         using (SqlDataAdapter da = new SqlDataAdapter(cmd))
                         {
                             da.Fill(dt);
@@ -233,12 +233,12 @@ namespace IcampusBoatBackend.Controllers.Attendance
         }
 
         [AllowAnonymous]
-        [HttpPost("check-mid-dates")]
-        public IActionResult CheckMidDates([FromBody] MidAttDatesRequest request)
+        [HttpPost("lecturers")]
+        public IActionResult GetEditLecturers([FromBody] EditLecturerLoadRequest request)
         {
             if (request == null)
             {
-                return BadRequest(new { success = false, message = "Mid dates request is required." });
+                return BadRequest(new { success = false, message = "Lecturer load request is required." });
             }
 
             try
@@ -247,15 +247,61 @@ namespace IcampusBoatBackend.Controllers.Attendance
                 {
                     con.Open();
                     DataTable dt = new DataTable();
-                    using (SqlCommand cmd = new SqlCommand("SP_CHECKMID_DATES", con))
+                    using (SqlCommand cmd = new SqlCommand("SP_ATT_FACULTY_LIST_Edit", con))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.Parameters.AddWithValue("@ACYR", request.AcdYr ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@PROGRAMME", request.Programme ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@BRANCH", request.Branch ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@SYEAR", request.SYear ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@SEM", request.Semester ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@PERIOD", request.Period ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@AcademicYear", request.AcdYr ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Shift", request.Shift ?? (request.Lecturer ?? (object)DBNull.Value));
+                        cmd.Parameters.AddWithValue("@Programme", request.Programme ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Branch", request.Branch ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Year", request.SYear ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Semester", request.Semester ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Section", request.Section ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@ADATE", request.Date ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Period", request.PeriodRange ?? (object)DBNull.Value);
+
+                        using (SqlDataAdapter da = new SqlDataAdapter(cmd))
+                        {
+                            da.Fill(dt);
+                        }
+                    }
+                    return Ok(new { success = true, data = DAL.DataTableToList(dt) });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpPost("old-lecturers")]
+        public IActionResult GetOldLecturers([FromBody] EditOldLecturerLoadRequest request)
+        {
+            if (request == null)
+            {
+                return BadRequest(new { success = false, message = "Old lecturer load request is required." });
+            }
+
+            try
+            {
+                using (SqlConnection con = new SqlConnection(DAL.SQLConnString))
+                {
+                    con.Open();
+                    DataTable dt = new DataTable();
+                    using (SqlCommand cmd = new SqlCommand("SP_ATT_OldFACULTY_LIST_Edit", con))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@AcademicYear", request.AcdYr ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Shift", request.Lecturer ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Programme", request.Programme ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Branch", request.Branch ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Year", request.SYear ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Semester", request.Semester ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Section", request.Section ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@ADATE", request.Date ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Period", request.PeriodRange ?? (object)DBNull.Value);
+
                         using (SqlDataAdapter da = new SqlDataAdapter(cmd))
                         {
                             da.Fill(dt);
@@ -272,7 +318,7 @@ namespace IcampusBoatBackend.Controllers.Attendance
 
         [AllowAnonymous]
         [HttpPost("students")]
-        public IActionResult GetStudents([FromBody] LoadStudentsRequest request)
+        public IActionResult GetEditStudents([FromBody] EditLoadStudentsRequest request)
         {
             if (request == null)
             {
@@ -285,7 +331,7 @@ namespace IcampusBoatBackend.Controllers.Attendance
                 {
                     con.Open();
                     DataTable dt = new DataTable();
-                    string spName = "Sp_Attendance_Students_Load";
+                    string spName = "Sp_Attendance_Students_Load_Edit";
                     if (request.IsPractical)
                     {
                         spName = "Sp_Attendance_Practical_Students_Load";
@@ -312,16 +358,16 @@ namespace IcampusBoatBackend.Controllers.Attendance
                         {
                             cmd.Parameters.AddWithValue("@ADATE", request.Date ?? (object)DBNull.Value);
                         }
-                        else if (spName == "Sp_Attendance_Students_Load")
+                        else if (spName == "Sp_Attendance_Students_Load_Edit")
                         {
-                            cmd.Parameters.AddWithValue("@PERIOD", request.Period ?? (object)DBNull.Value);
+                            cmd.Parameters.AddWithValue("@Period", request.Period ?? (object)DBNull.Value);
                             cmd.Parameters.AddWithValue("@ADATE", request.Date ?? (object)DBNull.Value);
-                            cmd.Parameters.AddWithValue("@ACADAMICYEAR", request.AcademicYear ?? (object)DBNull.Value);
-                            cmd.Parameters.AddWithValue("@PROGRAMME", request.Programme ?? (object)DBNull.Value);
-                            cmd.Parameters.AddWithValue("@BRANCH", request.Branch ?? (object)DBNull.Value);
-                            cmd.Parameters.AddWithValue("@YEAR", request.SYear ?? (object)DBNull.Value);
-                            cmd.Parameters.AddWithValue("@SEM", request.Semester ?? (object)DBNull.Value);
-                            cmd.Parameters.AddWithValue("@SEC", request.Section ?? (object)DBNull.Value);
+                            cmd.Parameters.AddWithValue("@AcadamicYear", request.AcademicYear ?? (object)DBNull.Value);
+                            cmd.Parameters.AddWithValue("@Programme", request.Programme ?? (object)DBNull.Value);
+                            cmd.Parameters.AddWithValue("@Branch", request.Branch ?? (object)DBNull.Value);
+                            cmd.Parameters.AddWithValue("@year", request.SYear ?? (object)DBNull.Value);
+                            cmd.Parameters.AddWithValue("@Sem", request.Semester ?? (object)DBNull.Value);
+                            cmd.Parameters.AddWithValue("@sec", request.Section ?? (object)DBNull.Value);
                         }
 
                         using (SqlDataAdapter da = new SqlDataAdapter(cmd))
@@ -340,8 +386,8 @@ namespace IcampusBoatBackend.Controllers.Attendance
 
         [AllowAnonymous]
         [HttpPost("save-subjectwise")]
-        public IActionResult SaveAttendanceSubjectWise([FromBody] SaveAttendanceSubWiseRequest request)
-        { 
+        public IActionResult SaveEditAttendanceSubjectWise([FromBody] SaveEditAttendanceSubWiseRequest request)
+        {
             if (request == null)
             {
                 return BadRequest(new { success = false, message = "Attendance save request is required." });
@@ -360,11 +406,7 @@ namespace IcampusBoatBackend.Controllers.Attendance
                     return BadRequest(new { success = false, message = "Attendance query string or students array is required." });
                 }
 
-                string updateDate = string.IsNullOrWhiteSpace(request.UpdateDate) || request.UpdateDate.Equals("NULL", StringComparison.OrdinalIgnoreCase)
-                    ? "NULL"
-                    : $"'{request.UpdateDate}'";
-
-                string sql = $"sp_Attendance_PapWise_Save '{request.Lecturer ?? ""}', '{request.Lecturer ?? ""}', '{request.Semester ?? ""}', '{request.Programme ?? ""}', '{request.Branch ?? ""}', '{request.SYear ?? ""}', '{request.Section ?? ""}', '{request.Period ?? ""}', '{request.Subjects ?? ""}', '{request.AcademicYear ?? ""}', '{request.Day ?? ""}', '{request.Date ?? ""}', {updateDate}, '{request.SrNo ?? ""}', '{request.ErNo ?? ""}', '{request.DayTaught ?? ""}', '{request.AttStat ?? ""}', {queryStr}, '{request.PeriodRange ?? ""}', '{request.TLM ?? ""}'";
+                string sql = $"sp_Attendance_Admn_PapWise_Save_Edit '{request.Lecturer ?? ""}', '{request.Lecturer ?? ""}', '{request.Semester ?? ""}', '{request.Programme ?? ""}', '{request.Branch ?? ""}', '{request.SYear ?? ""}', '{request.Section ?? ""}', '{request.Period ?? ""}', '{request.Subjects ?? ""}', '{request.AcademicYear ?? ""}', '{request.Day ?? ""}', '{request.Date ?? ""}', '{request.SrNo ?? ""}', '{request.ErNo ?? ""}', '{request.DayTaught ?? ""}', '{request.AttStat ?? ""}', {queryStr}, '{request.PeriodRange ?? ""}', '{request.TLM ?? ""}'";
 
                 using (SqlConnection con = new SqlConnection(DAL.SQLConnString))
                 {
@@ -373,7 +415,7 @@ namespace IcampusBoatBackend.Controllers.Attendance
                     {
                         cmd.CommandType = CommandType.Text;
                         int rows = cmd.ExecuteNonQuery();
-                        return Ok(new { success = true, message = "Subject-wise attendance saved successfully.", affectedRows = rows });
+                        return Ok(new { success = true, message = "Edited subject-wise attendance saved successfully.", affectedRows = rows });
                     }
                 }
             }
@@ -383,83 +425,7 @@ namespace IcampusBoatBackend.Controllers.Attendance
             }
         }
 
-        [AllowAnonymous]
-        [HttpPost("check-admin-dates")]
-        public IActionResult CheckAdminDates([FromBody] AdminDatesCheckRequest request)
-        {
-            if (request == null)
-            {
-                return BadRequest(new { success = false, message = "Admin dates check request is required." });
-            }
-
-            try
-            {
-                using (SqlConnection con = new SqlConnection(DAL.SQLConnString))
-                {
-                    con.Open();
-                    DataTable dt = new DataTable();
-                    using (SqlCommand cmd = new SqlCommand("sp_CheckAdminDates", con))
-                    {
-                        cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.Parameters.AddWithValue("@Lecturer", request.Lecturer ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@Branch", request.Branch ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@ACADAMICYEAR", request.AcdYr ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@date", request.Date ?? (object)DBNull.Value);
-                        using (SqlDataAdapter da = new SqlDataAdapter(cmd))
-                        {
-                            da.Fill(dt);
-                        }
-                    }
-                    return Ok(new { success = true, data = DAL.DataTableToList(dt) });
-                }
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { success = false, message = ex.Message });
-            }
-        }
-
-        [AllowAnonymous]
-        [HttpPost("employee-periods")]
-        public IActionResult GetEmployeePeriodsFromAtt([FromBody] EmpPeriodsAttRequest request)
-        {
-            if (request == null)
-            {
-                return BadRequest(new { success = false, message = "Employee periods request is required." });
-            }
-
-            try
-            {
-                using (SqlConnection con = new SqlConnection(DAL.SQLConnString))
-                {
-                    con.Open();
-                    DataTable dt = new DataTable();
-                    using (SqlCommand cmd = new SqlCommand("Sp_GetPeriodsFromAttByEmp", con))
-                    {
-                        cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.Parameters.AddWithValue("@aDate", request.Date ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@aDay", request.Day ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@Section", request.Section ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@SYEAR", request.SYear ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@Semister", request.Semester ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@COURSE", request.Programme ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@BRANCH", request.Branch ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@Lecturer", request.Lecturer ?? (object)DBNull.Value);
-                        using (SqlDataAdapter da = new SqlDataAdapter(cmd))
-                        {
-                            da.Fill(dt);
-                        }
-                    }
-                    return Ok(new { success = true, data = DAL.DataTableToList(dt) });
-                }
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { success = false, message = ex.Message });
-            }
-        }
-
-        private static string BuildQueryStringFromStudents(List<FacultyStudentAttendanceItem> students, string? srNoStr, string? erNoStr)
+        private static string BuildQueryStringFromStudents(List<EditStudentAttendanceItem> students, string? srNoStr, string? erNoStr)
         {
             string[] regNo = new string[150];
             string[] attStatus = new string[150];
