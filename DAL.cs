@@ -6,9 +6,14 @@ namespace IcampusBoatBackend
 {
     public class DAL
     {
-        private static string sQLServer = "DBS22\\SQLEXPRESS2022";
+        //private static string sQLServer = "DBS22\\SQLEXPRESS2022";
+        //private static string sQLdb = "db_ERP_Lbrce_react";
+        //private static string sQLpass = "12345";  
+        //private static string sQLUserID = "sa";
+
+        private static string sQLServer = "103.175.163.60,1234";
         private static string sQLdb = "db_ERP_Lbrce_react";
-        private static string sQLpass = "12345";  
+        private static string sQLpass = "Aq@q&7awa$4as&7WaRt";
         private static string sQLUserID = "sa";
 
         //private static string sQLServer = @"103.92.235.226";
