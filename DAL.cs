@@ -16,6 +16,7 @@ namespace IcampusBoatBackend
         private static string sQLpass = "Aq@q&7awa$4as&7WaRt";
         private static string sQLUserID = "sa";
 
+
         //private static string sQLServer = @"103.92.235.226";
         //private static string sQLdb = "DB_A06577_DBS";
         //private static string sQLpass = "qazplm@123";  //"qazplm@123";
