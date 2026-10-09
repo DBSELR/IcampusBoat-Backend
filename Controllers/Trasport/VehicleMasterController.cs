@@ -150,7 +150,7 @@ namespace IcampusBoatBackend.Controllers.Trasport
                     using (SqlCommand cmd = new SqlCommand("SP_TRANSPORT_VEHICLEMASTER_SAVE", con))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.Parameters.AddWithValue("@ID", isInsert ? "0" : request.Id);
+                        cmd.Parameters.AddWithValue("@ID", isInsert ? "" : request.Id);
                         cmd.Parameters.AddWithValue("@ROUTENAME", request.RouteName);
                         cmd.Parameters.AddWithValue("@VEHICLENO", request.VehicleNo);
                         cmd.Parameters.AddWithValue("@VEHICLEREGNO", request.VehicleRegNo);
