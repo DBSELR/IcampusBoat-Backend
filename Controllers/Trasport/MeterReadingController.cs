@@ -200,7 +200,9 @@ namespace IcampusBoatBackend.Controllers.Trasport
 
                     using (SqlCommand cmd = new SqlCommand("SP_TRANSPORT_METERREADING_SAVE", con))
                     {
-                        cmd.Parameters.AddWithValue("@ID", isInsert ? 0 : request.Id);
+                        cmd.CommandType = CommandType.StoredProcedure;
+
+                        cmd.Parameters.AddWithValue("@ID", isInsert ? "0" : request.Id);
                         cmd.Parameters.AddWithValue("@ROUTENAME", request.RouteName ?? "");
                         cmd.Parameters.AddWithValue("@VEHICLENO", request.VehicleNo ?? "");
                         cmd.Parameters.AddWithValue("@DRIVERNAME", request.DriverName ?? "");
@@ -208,9 +210,9 @@ namespace IcampusBoatBackend.Controllers.Trasport
                         cmd.Parameters.AddWithValue("@OPENINGMETERREADING", request.OpeningMeterReading ?? "");
                         cmd.Parameters.AddWithValue("@CLOSINGMETERREADING", request.ClosingMeterReading ?? "");
                         cmd.Parameters.AddWithValue("@REMARKS", request.Remarks ?? "");
-                        cmd.Parameters.AddWithValue("@USERID", request.UserId ?? "");
-                        cmd.Parameters.AddWithValue("@ACADEMICYEAR", request.AcademicYear ?? "");
-                        cmd.Parameters.AddWithValue("@FINANCIALYEAR", request.FinancialYear ?? "");
+                        cmd.Parameters.AddWithValue("@UserId", request.UserId ?? "");
+                        cmd.Parameters.AddWithValue("@AcademicYear", request.AcademicYear ?? "");
+                        cmd.Parameters.AddWithValue("@FinancialYear", request.FinancialYear ?? "");
                         int rowsAffected = cmd.ExecuteNonQuery();
 
                         if (rowsAffected > 0)
