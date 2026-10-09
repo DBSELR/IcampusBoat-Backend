@@ -150,7 +150,7 @@ namespace IcampusBoatBackend.Controllers.Trasport
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@SEARCHNAME", searchName ?? "");
-                        cmd.Parameters.AddWithValue("@AcademicYear", academicYear);
+                        cmd.Parameters.AddWithValue("@ACYR", academicYear);
                         using (SqlDataAdapter da = new SqlDataAdapter(cmd))
                         {
                             da.Fill(dt);
