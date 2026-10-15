@@ -459,6 +459,271 @@ namespace IcampusBoatBackend.Controllers.Attendance
             }
         }
 
+        [AllowAnonymous]
+        [HttpPost("day-periods")]
+        public IActionResult LoadAttDayPeriods([FromBody] DayPeriodsLoadRequest request)
+        {
+            if (request == null)
+            {
+                return BadRequest(new { success = false, message = "Request body is required." });
+            }
+
+            try
+            {
+                using (SqlConnection con = new SqlConnection(DAL.SQLConnString))
+                {
+                    con.Open();
+                    DataTable dt = new DataTable();
+                    using (SqlCommand cmd = new SqlCommand("Proc_Attendance_DayPeriods", con))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@Lecturer", request.UserId ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@AcademicYear", request.AcademicYear ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Shift", request.Shift ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Programme", request.Programme ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Branch", request.Branch ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Year", request.SYear ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Sem", request.Semester ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Section", request.Section ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@ADATE", request.Date ?? (object)DBNull.Value);
+                        using (SqlDataAdapter da = new SqlDataAdapter(cmd))
+                        {
+                            da.Fill(dt);
+                        }
+                    }
+                    return Ok(new { success = true, data = DAL.DataTableToList(dt) });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpPost("students-att-stat")]
+        public IActionResult LoadAttendanceStudentsAttStat([FromBody] AttStudentsAttStatRequest request)
+        {
+            if (request == null)
+            {
+                return BadRequest(new { success = false, message = "Request body is required." });
+            }
+
+            try
+            {
+                using (SqlConnection con = new SqlConnection(DAL.SQLConnString))
+                {
+                    con.Open();
+                    DataTable dt = new DataTable();
+                    using (SqlCommand cmd = new SqlCommand("Sp_Attendance_Students_AttStat", con))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@aDate", request.Date ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@aDay", request.Day ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Section", request.Section ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@SYEAR", request.SYear ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Semister", request.Semester ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@COURSE", request.Programme ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@BRANCH", request.Branch ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Period", request.Period ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Subject", request.Subjects ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Lecturer", request.Lecturer ?? (object)DBNull.Value);
+                        using (SqlDataAdapter da = new SqlDataAdapter(cmd))
+                        {
+                            da.Fill(dt);
+                        }
+                    }
+                    return Ok(new { success = true, data = DAL.DataTableToList(dt) });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpPost("delete-faculty-att-stat")]
+        public IActionResult DeleteAttendanceFacultyAttStat([FromBody] DeleteFacultyAttStatRequest request)
+        {
+            if (request == null)
+            {
+                return BadRequest(new { success = false, message = "Request body is required." });
+            }
+
+            try
+            {
+                using (SqlConnection con = new SqlConnection(DAL.SQLConnString))
+                {
+                    con.Open();
+                    DataTable dt = new DataTable();
+                    using (SqlCommand cmd = new SqlCommand("Sp_Attendance_Delete_Faculty_AttStat", con))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@aDate", request.Date ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@aDay", request.Day ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Section", request.Section ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@SYEAR", request.SYear ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Semister", request.Semester ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@COURSE", request.Programme ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@BRANCH", request.Branch ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Period", request.Period ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Subject", request.Subjects ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Lecturer", request.Lecturer ?? (object)DBNull.Value);
+                        using (SqlDataAdapter da = new SqlDataAdapter(cmd))
+                        {
+                            da.Fill(dt);
+                        }
+                    }
+                    return Ok(new { success = true, data = DAL.DataTableToList(dt) });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpGet("period-status")]
+        public IActionResult GetPeriodStatus([FromQuery] string? programme, [FromQuery] string? shift)
+        {
+            try
+            {
+                using (SqlConnection con = new SqlConnection(DAL.SQLConnString))
+                {
+                    con.Open();
+                    DataTable dt = new DataTable();
+                    using (SqlCommand cmd = new SqlCommand("SP_GET_PERIOD", con))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@PROGRAMME", programme ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@ShiftNo", shift ?? (object)DBNull.Value);
+                        using (SqlDataAdapter da = new SqlDataAdapter(cmd))
+                        {
+                            da.Fill(dt);
+                        }
+                    }
+                    return Ok(new { success = true, data = DAL.DataTableToList(dt) });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpPost("posting-dates")]
+        public IActionResult GetPostingDates([FromBody] PostingDatesRequest request)
+        {
+            if (request == null)
+            {
+                return BadRequest(new { success = false, message = "Request body is required." });
+            }
+
+            try
+            {
+                using (SqlConnection con = new SqlConnection(DAL.SQLConnString))
+                {
+                    con.Open();
+                    DataTable dt = new DataTable();
+                    using (SqlCommand cmd = new SqlCommand("SP_GET_OLDADATES", con))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@ACYR", request.AcdYr ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@coursecode", request.Programme ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@syear", request.SYear ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@sem", request.Semester ?? (object)DBNull.Value);
+                        using (SqlDataAdapter da = new SqlDataAdapter(cmd))
+                        {
+                            da.Fill(dt);
+                        }
+                    }
+                    return Ok(new { success = true, data = DAL.DataTableToList(dt) });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpPost("adm-permissions")]
+        public IActionResult GetAttAdmPermissions([FromBody] AttAdmPermissionsRequest request)
+        {
+            if (request == null)
+            {
+                return BadRequest(new { success = false, message = "Request body is required." });
+            }
+
+            try
+            {
+                using (SqlConnection con = new SqlConnection(DAL.SQLConnString))
+                {
+                    con.Open();
+                    DataTable dt = new DataTable();
+                    using (SqlCommand cmd = new SqlCommand("sp_get_Att_AdmPermissions", con))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@Acyr", request.AcdYr ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@programme", request.Programme ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Branchcode", request.Branch ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@year", request.SYear ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@sem", request.Semester ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Lecturer", request.Lecturer ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Date", request.Date ?? (object)DBNull.Value);
+                        using (SqlDataAdapter da = new SqlDataAdapter(cmd))
+                        {
+                            da.Fill(dt);
+                        }
+                    }
+                    return Ok(new { success = true, data = DAL.DataTableToList(dt) });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpPost("valid-dates")]
+        public IActionResult GetValidDate([FromBody] ValidDatesRequest request)
+        {
+            if (request == null)
+            {
+                return BadRequest(new { success = false, message = "Request body is required." });
+            }
+
+            try
+            {
+                using (SqlConnection con = new SqlConnection(DAL.SQLConnString))
+                {
+                    con.Open();
+                    DataTable dt = new DataTable();
+                    using (SqlCommand cmd = new SqlCommand("SP_GET_VALIDDATE", con))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@ACADEMICYEAR", request.AcademicYear ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@COURSE", request.Programme ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@YEAR", request.SYear ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@sem", request.Semester ?? (object)DBNull.Value);
+                        using (SqlDataAdapter da = new SqlDataAdapter(cmd))
+                        {
+                            da.Fill(dt);
+                        }
+                    }
+                    return Ok(new { success = true, data = DAL.DataTableToList(dt) });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
         private static string BuildQueryStringFromStudents(List<FacultyStudentAttendanceItem> students, string? srNoStr, string? erNoStr)
         {
             string[] regNo = new string[150];

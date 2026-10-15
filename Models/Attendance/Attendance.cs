@@ -101,4 +101,185 @@ namespace IcampusBoatBackend.Models.Attendance
         public string? Branch { get; set; }
         public string? Lecturer { get; set; }
     }
+
+    public class SaveAttendanceRequest
+    {
+        public string? Id { get; set; }
+        public string? Date { get; set; }
+        public string? Period { get; set; }
+        public string? Subjects { get; set; }
+        public string? AbsentNumber { get; set; }
+        public string? AbsentNumbers { get; set; }
+        public string? PeriodRange { get; set; }
+    }
+
+    public class DayPeriodsLoadRequest
+    {
+        public string? UserId { get; set; }
+        public string? AcademicYear { get; set; }
+        public string? Shift { get; set; }
+        public string? Programme { get; set; }
+        public string? Branch { get; set; }
+        public string? SYear { get; set; }
+        public string? Semester { get; set; }
+        public string? Section { get; set; }
+        public string? Date { get; set; }
+    }
+
+    public class AttStudentsCountRequest
+    {
+        public string? Date { get; set; }
+        public string? Day { get; set; }
+        public string? Section { get; set; }
+        public string? SYear { get; set; }
+        public string? Semester { get; set; }
+        public string? Programme { get; set; }
+        public string? Branch { get; set; }
+        public string? Period { get; set; }
+        public string? Subjects { get; set; }
+    }
+
+    public class AttStudentsAttStatRequest
+    {
+        public string? Date { get; set; }
+        public string? Day { get; set; }
+        public string? Section { get; set; }
+        public string? SYear { get; set; }
+        public string? Semester { get; set; }
+        public string? Programme { get; set; }
+        public string? Branch { get; set; }
+        public string? Period { get; set; }
+        public string? Subjects { get; set; }
+        public string? Lecturer { get; set; }
+    }
+
+    public class DeleteFacultyAttStatRequest
+    {
+        public string? Date { get; set; }
+        public string? Day { get; set; }
+        public string? Section { get; set; }
+        public string? SYear { get; set; }
+        public string? Semester { get; set; }
+        public string? Programme { get; set; }
+        public string? Branch { get; set; }
+        public string? Period { get; set; }
+        public string? Subjects { get; set; }
+        public string? Lecturer { get; set; }
+    }
+
+    public class CheckPeriodAttStatusRequest
+    {
+        public string? Date { get; set; }
+        public string? Day { get; set; }
+        public string? Section { get; set; }
+        public string? SYear { get; set; }
+        public string? Semester { get; set; }
+        public string? Programme { get; set; }
+        public string? Branch { get; set; }
+        public string? Period { get; set; }
+        public string? Subjects { get; set; }
+        public string? Lecturer { get; set; }
+    }
+
+    public class SectionChangeRequest
+    {
+        public string? Programme { get; set; }
+        public string? Branch { get; set; }
+        public string? SYear { get; set; }
+        public string? Semester { get; set; }
+        public string? Section { get; set; }
+        public string? AcademicYear { get; set; }
+    }
+
+    public class UpdateSectionRequest
+    {
+        public string? Section { get; set; }
+        public string? UpdateSection { get; set; }
+        public string? Programme { get; set; }
+        public string? Branch { get; set; }
+        public string? SYear { get; set; }
+        public string? Semester { get; set; }
+        public string? AcademicYear { get; set; }
+        public string? UserId { get; set; }
+    }
+
+    public class StatusRequest
+    {
+        public string? Programme { get; set; }
+        public string? Branch { get; set; }
+        public string? SYear { get; set; }
+    }
+
+    public class DelInactiveStudentsRequest
+    {
+        public string? Section { get; set; }
+        public string? DeleteStudents { get; set; }
+        public string? Programme { get; set; }
+        public string? Branch { get; set; }
+        public string? SYear { get; set; }
+        public string? Semester { get; set; }
+        public string? AcademicYear { get; set; }
+        public string? UserId { get; set; }
+        public string? Status { get; set; }
+    }
+
+    public class InactiveStudentsRequest
+    {
+        public string? Programme { get; set; }
+        public string? Branch { get; set; }
+        public string? SYear { get; set; }
+        public string? Semester { get; set; }
+        public string? Section { get; set; }
+        public string? AcademicYear { get; set; }
+        public string? Status { get; set; }
+    }
+
+    public class PostingDatesRequest
+    {
+        public string? AcdYr { get; set; }
+        public string? Programme { get; set; }
+        public string? SYear { get; set; }
+        public string? Semester { get; set; }
+    }
+
+    public class AttAdmPermissionsRequest
+    {
+        public string? AcdYr { get; set; }
+        public string? Programme { get; set; }
+        public string? Branch { get; set; }
+        public string? SYear { get; set; }
+        public string? Semester { get; set; }
+        public string? Lecturer { get; set; }
+        public string? Date { get; set; }
+    }
+
+    public class ValidDatesRequest
+    {
+        public string? AcademicYear { get; set; }
+        public string? Programme { get; set; }
+        public string? SYear { get; set; }
+        public string? Semester { get; set; }
+    }
+
+    public class SaveMidAttendanceRequest
+    {
+        public string? Id { get; set; }
+        public string? Programme { get; set; }
+        public string? Branch { get; set; }
+        public string? SYear { get; set; }
+        public string? Semester { get; set; }
+        public string? Period { get; set; }
+        public string? Date { get; set; }
+        public string? ToDate { get; set; }
+        public string? AcademicYear { get; set; }
+        public string? UserId { get; set; }
+    }
+
+    public class MidAttDataRequest
+    {
+        public string? Programme { get; set; }
+        public string? Branch { get; set; }
+        public string? SYear { get; set; }
+        public string? Semester { get; set; }
+    }
 }
