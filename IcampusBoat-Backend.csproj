@@ -24,6 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Controllers\Performance\" />
+    <Folder Include="Models\Performance\" />
     <Folder Include="Repositories\" />
     <Folder Include="Services\" />
   </ItemGroup>
